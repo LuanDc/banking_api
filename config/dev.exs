@@ -1,5 +1,13 @@
 import Config
 
+config :banking_api, BankingApi.EventStore,
+  serializer: EventStore.JsonSerializer,
+  username: "postgres",
+  password: "postgres",
+  database: "banking_api_eventstore_dev",
+  hostname: "localhost",
+  pool_size: 10
+
 # Configure your database
 config :banking_api, BankingApi.Repo,
   username: "postgres",

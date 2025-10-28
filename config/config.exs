@@ -7,9 +7,21 @@
 # General application configuration
 import Config
 
+config :banking_api, BankingApi.EventStore, serializer: Commanded.Serialization.JsonSerializer
+
+# config/config.exs
+config :banking_api, event_stores: [BankingApi.EventStore]
+
 config :banking_api,
   ecto_repos: [BankingApi.Repo],
+  event_stores: [BankingApi.EventStore],
   generators: [timestamp_type: :utc_datetime]
+
+config :banking_api, BankingApi.App,
+  event_store: [
+    adapter: Commanded.EventStore.Adapters.EventStore,
+    event_store: BankingApi.EventStore
+  ]
 
 # Configures the endpoint
 config :banking_api, BankingApiWeb.Endpoint,
