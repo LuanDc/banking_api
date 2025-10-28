@@ -10,8 +10,8 @@ defmodule BankingApi.Application do
     children = [
       BankingApiWeb.Telemetry,
       BankingApi.App,
-      AccountBalanceHandler,
       BankingApi.Repo,
+      BankingApi.BankAccounts.Supervisor,
       {DNSCluster, query: Application.get_env(:banking_api, :dns_cluster_query) || :ignore},
       {Phoenix.PubSub, name: BankingApi.PubSub},
       # Start the Finch HTTP client for sending emails
