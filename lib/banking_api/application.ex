@@ -9,7 +9,7 @@ defmodule BankingApi.Application do
   def start(_type, _args) do
     children = [
       BankingApiWeb.Telemetry,
-      BankingApi.App,
+      BankingApi.BankingApiApp,
       BankingApi.Repo,
       BankingApi.BankAccounts.Supervisor,
       {DNSCluster, query: Application.get_env(:banking_api, :dns_cluster_query) || :ignore},

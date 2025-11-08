@@ -60,7 +60,8 @@ defmodule BankingApi.MixProject do
       {:bandit, "~> 1.5"},
       {:commanded, "~> 1.4"},
       {:commanded_eventstore_adapter, "~> 1.4"},
-      {:commanded_ecto_projections, "~> 1.4"}
+      {:commanded_ecto_projections, "~> 1.4"},
+      {:vex, "~> 0.9.2"}
     ]
   end
 

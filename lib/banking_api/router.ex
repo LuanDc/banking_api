@@ -4,5 +4,11 @@ defmodule BankingApi.Router do
   alias BankingApi.BankAccounts.Aggregates.BankAccount
   alias BankingApi.BankAccounts.Commands.OpenBankAccount
 
-  dispatch(OpenBankAccount, to: BankAccount, identity: :account_number)
+  alias BankingApi.Support.Middleware.Validate
+
+  middleware(Validate)
+
+  identify(BankAccount, prefix: "bank-account-", by: :account_number)
+
+  dispatch(OpenBankAccount, to: BankAccount)
 end

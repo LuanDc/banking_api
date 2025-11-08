@@ -14,6 +14,13 @@ defmodule BankingApiWeb.Router do
     plug :accepts, ["json"]
   end
 
+  scope "/api", BankingApiWeb.Api do
+    pipe_through :api
+
+    post "/bank_account", BankAccountController, :create
+    get "/bank_account/:id", BankAccountController, :get
+  end
+
   scope "/", BankingApiWeb do
     pipe_through :browser
 

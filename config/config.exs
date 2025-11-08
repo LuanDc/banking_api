@@ -7,6 +7,8 @@
 # General application configuration
 import Config
 
+config :vex, sources: [BankingApi.Support.Validators, Vex.Validators]
+
 config :banking_api, BankingApi.EventStore, serializer: Commanded.Serialization.JsonSerializer
 
 # config/config.exs
@@ -17,7 +19,7 @@ config :banking_api,
   event_stores: [BankingApi.EventStore],
   generators: [timestamp_type: :utc_datetime]
 
-config :banking_api, BankingApi.App,
+config :banking_api, BankingApi.BankingApiApp,
   event_store: [
     adapter: Commanded.EventStore.Adapters.EventStore,
     event_store: BankingApi.EventStore
