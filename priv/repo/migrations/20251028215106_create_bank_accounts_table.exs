@@ -6,6 +6,7 @@ defmodule BankingApi.Repo.Migrations.CreateBankAccountsTable do
       add :id, :uuid, primary_key: true
       add :account_number, :string
       add :balance, :integer
+      add :status, :string
     end
   end
 end

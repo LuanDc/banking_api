@@ -6,5 +6,6 @@ defmodule BankingApi.BankAccounts.Projections.BankAccount do
   schema "bank_accounts" do
     field :account_number, :string
     field :balance, :integer
+    field :status, Ecto.Enum, values: [:open, :closed]
   end
 end
