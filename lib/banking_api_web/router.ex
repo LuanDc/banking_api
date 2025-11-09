@@ -18,8 +18,11 @@ defmodule BankingApiWeb.Router do
     pipe_through :api
 
     get "/bank_account/:account_number", BankAccountController, :get
+
     post "/bank_account/open", OpenBankAccountController, :create
     post "/bank_account/:account_number/close", CloseBankAccountController, :create
+
+    post "/bank_account/:account_number/deposit", DepositController, :create
   end
 
   scope "/", BankingApiWeb do

@@ -7,7 +7,14 @@ defmodule BankingApi.BankAccounts.Projectors.BankAccount do
 
   alias BankingApi.BankAccounts.Events.BankAccountOpened
   alias BankingApi.BankAccounts.Events.BankAccountClosed
+  alias BankingApi.BankAccounts.Events.MoneyDeposited
   alias BankingApi.BankAccounts.Projections.BankAccount
+
+  import BankingApi.BankAccounts.Queries,
+    only: [
+      bank_account_query: 1,
+      increase_balance_query: 2
+    ]
 
   project(
     %BankAccountOpened{id: id, account_number: account_number, initial_balance: balance},
@@ -23,20 +30,22 @@ defmodule BankingApi.BankAccounts.Projectors.BankAccount do
   )
 
   project(
-    %BankAccountClosed{id: id},
+    %MoneyDeposited{amount: amount, id: id},
     _metadata,
     fn multi ->
-      update_bank_account(multi, id, status: :closed)
+      update_bank_account(multi, increase_balance_query(id, amount))
     end
   )
 
-  defp update_bank_account(multi, bank_account_uuid, changes) do
-    Ecto.Multi.update_all(multi, :bank_accounts, bank_account_query(bank_account_uuid),
-      set: changes
-    )
-  end
+  project(
+    %BankAccountClosed{id: id},
+    _metadata,
+    fn multi ->
+      update_bank_account(multi, bank_account_query(id), status: :closed)
+    end
+  )
 
-  defp bank_account_query(bank_account_uuid) do
-    from(ba in BankAccount, where: ba.id == ^bank_account_uuid)
+  defp update_bank_account(multi, query, changes \\ []) do
+    Ecto.Multi.update_all(multi, :bank_account, query, set: changes)
   end
 end

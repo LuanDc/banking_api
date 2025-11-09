@@ -3,6 +3,7 @@ defmodule BankingApi.Router do
 
   alias BankingApi.BankAccounts.Aggregates.BankAccount
   alias BankingApi.BankAccounts.Commands.CloseBankAccount
+  alias BankingApi.BankAccounts.Commands.DepositMoney
   alias BankingApi.BankAccounts.Commands.OpenBankAccount
 
   alias BankingApi.Support.Middleware.Validate
@@ -11,6 +12,12 @@ defmodule BankingApi.Router do
 
   identify(BankAccount, prefix: "bank-account-", by: :account_number)
 
-  dispatch(OpenBankAccount, to: BankAccount)
-  dispatch(CloseBankAccount, to: BankAccount)
+  dispatch(
+    [
+      OpenBankAccount,
+      CloseBankAccount,
+      DepositMoney
+    ],
+    to: BankAccount
+  )
 end
