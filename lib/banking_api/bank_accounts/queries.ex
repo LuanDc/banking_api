@@ -13,4 +13,11 @@ defmodule BankingApi.BankAccounts.Queries do
       update: [inc: [balance: ^amount]]
     )
   end
+
+  def decrease_balance_query(id, amount) do
+    from(ba in BankAccount,
+      where: ba.id == ^id,
+      update: [inc: [balance: ^(-amount)]]
+    )
+  end
 end

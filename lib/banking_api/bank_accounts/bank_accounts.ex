@@ -3,6 +3,7 @@ defmodule BankingApi.BankAccounts do
   alias BankingApi.BankAccounts.Commands.CloseBankAccount
   alias BankingApi.BankAccounts.Commands.OpenBankAccount
   alias BankingApi.BankAccounts.Commands.DepositMoney
+  alias BankingApi.BankAccounts.Commands.WithdrawMoney
   alias BankingApi.BankAccounts.Projections.BankAccount
   alias BankingApi.Repo
 
@@ -37,6 +38,18 @@ defmodule BankingApi.BankAccounts do
       |> DepositMoney.assign_id(bank_account.id)
       |> DepositMoney.assign_account_number(params["account_number"])
       |> DepositMoney.assign_amount(params["amount"])
+
+    with :ok <- BankingApiApp.dispatch(command, consistency: :strong) do
+      get(bank_account.id)
+    end
+  end
+
+  def withdraw(bank_account, params) do
+    command =
+      WithdrawMoney.new()
+      |> WithdrawMoney.assign_id(bank_account.id)
+      |> WithdrawMoney.assign_account_number(params["account_number"])
+      |> WithdrawMoney.assign_amount(params["amount"])
 
     with :ok <- BankingApiApp.dispatch(command, consistency: :strong) do
       get(bank_account.id)

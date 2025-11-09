@@ -8,12 +8,14 @@ defmodule BankingApi.BankAccounts.Projectors.BankAccount do
   alias BankingApi.BankAccounts.Events.BankAccountOpened
   alias BankingApi.BankAccounts.Events.BankAccountClosed
   alias BankingApi.BankAccounts.Events.MoneyDeposited
+  alias BankingApi.BankAccounts.Events.MoneyWithdrawn
   alias BankingApi.BankAccounts.Projections.BankAccount
 
   import BankingApi.BankAccounts.Queries,
     only: [
       bank_account_query: 1,
-      increase_balance_query: 2
+      increase_balance_query: 2,
+      decrease_balance_query: 2
     ]
 
   project(
@@ -34,6 +36,14 @@ defmodule BankingApi.BankAccounts.Projectors.BankAccount do
     _metadata,
     fn multi ->
       update_bank_account(multi, increase_balance_query(id, amount))
+    end
+  )
+
+  project(
+    %MoneyWithdrawn{amount: amount, id: id},
+    _metadata,
+    fn multi ->
+      update_bank_account(multi, decrease_balance_query(id, amount))
     end
   )
 

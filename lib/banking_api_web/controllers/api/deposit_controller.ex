@@ -3,6 +3,8 @@ defmodule BankingApiWeb.Api.DepositController do
 
   alias BankingApi.BankAccounts
 
+  action_fallback BankingApiWeb.FallbackController
+
   def create(conn, %{"account_number" => account_number} = params) do
     bank_account = BankAccounts.get_by!(account_number: account_number)
 
@@ -12,8 +14,13 @@ defmodule BankingApiWeb.Api.DepositController do
         |> put_status(201)
         |> json(bank_account)
 
-      {:error, reason} ->
-        {:error, reason}
+      {:error, :account_closed} ->
+        conn
+        |> put_status(422)
+        |> json(%{"error" => "Account closed"})
+
+      error ->
+        error
     end
   end
 end
