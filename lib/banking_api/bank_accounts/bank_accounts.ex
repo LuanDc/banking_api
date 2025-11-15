@@ -26,9 +26,7 @@ defmodule BankingApi.BankAccounts do
       |> OpenBankAccount.new()
       |> OpenBankAccount.assign_id(id)
 
-    with :ok <- BankingApiApp.dispatch(command, consistency: :strong) do
-      get(id)
-    end
+    BankingApiApp.dispatch(command)
   end
 
   def deposit(bank_account, params) do

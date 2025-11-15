@@ -9,10 +9,10 @@ defmodule BankingApiWeb.Api.OpenBankAccountController do
     response = BankAccounts.open_bank_account(params)
 
     case response do
-      {:ok, bank_account} ->
+      :ok ->
         conn
         |> put_status(200)
-        |> json(bank_account)
+        |> text("")
 
       {:error, :account_already_opened} ->
         conn
