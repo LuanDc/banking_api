@@ -25,13 +25,13 @@ defmodule BankingApi.BankAccounts.Aggregates.BankAccount do
         account_number: account_number,
         initial_balance: initial_balance
       })
-      when initial_balance > 0 do
+      when initial_balance >= 0 do
     %BankAccountOpened{id: id, account_number: account_number, initial_balance: initial_balance}
   end
 
   @impl Aggregate
   def execute(%BankAccount{}, %OpenBankAccount{initial_balance: initial_balance})
-      when initial_balance <= 0 do
+      when initial_balance < 0 do
     {:error, :initial_balance_must_be_above_zero}
   end
 
