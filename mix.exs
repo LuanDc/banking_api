@@ -61,7 +61,8 @@ defmodule BankingApi.MixProject do
       {:commanded, "~> 1.4"},
       {:commanded_eventstore_adapter, "~> 1.4"},
       {:commanded_ecto_projections, "~> 1.4"},
-      {:vex, "~> 0.9.2"}
+      {:vex, "~> 0.9.2"},
+      {:exconstructor, "~> 1.2.19"}
     ]
   end
 
