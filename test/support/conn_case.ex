@@ -28,11 +28,18 @@ defmodule BankingApiWeb.ConnCase do
       import Plug.Conn
       import Phoenix.ConnTest
       import BankingApiWeb.ConnCase
+      import Commanded.Assertions.EventAssertions
     end
   end
 
   setup _tags do
-    BankingApi.Storage.reset!()
+    {:ok, _} = Application.ensure_all_started(:banking_api)
+
+    on_exit(fn ->
+      :ok = Application.stop(:banking_api)
+      BankingApi.Storage.reset!()
+    end)
+
     {:ok, conn: Phoenix.ConnTest.build_conn()}
   end
 end

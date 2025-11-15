@@ -23,12 +23,19 @@ defmodule BankingApi.DataCase do
       import Ecto
       import Ecto.Changeset
       import Ecto.Query
+      import Commanded.Assertions.EventAssertions
       import BankingApi.DataCase
     end
   end
 
   setup _tags do
-    BankingApi.Storage.reset!()
+    {:ok, _} = Application.ensure_all_started(:banking_api)
+
+    on_exit(fn ->
+      :ok = Application.stop(:banking_api)
+      BankingApi.Storage.reset!()
+    end)
+
     :ok
   end
 

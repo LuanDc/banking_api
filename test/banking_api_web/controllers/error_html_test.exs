@@ -1,5 +1,5 @@
 defmodule BankingApiWeb.ErrorHTMLTest do
-  use BankingApiWeb.ConnCase, async: true
+  use BankingApiWeb.ConnCase
 
   # Bring render_to_string/4 for testing custom views
   import Phoenix.Template
