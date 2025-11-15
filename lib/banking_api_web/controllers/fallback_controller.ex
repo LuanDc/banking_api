@@ -6,7 +6,7 @@ defmodule BankingApiWeb.FallbackController do
   def call(conn, {:error, :validation_failure, reason}) do
     conn
     |> put_status(400)
-    |> json(reason)
+    |> json(%{"error" => reason})
   end
 
   def call(conn, {:error, reason}) do

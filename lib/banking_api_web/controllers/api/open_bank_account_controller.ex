@@ -6,30 +6,21 @@ defmodule BankingApiWeb.Api.OpenBankAccountController do
   action_fallback BankingApiWeb.FallbackController
 
   def create(conn, params) do
-    params
-    |> BankAccounts.open_bank_account()
-    |> handle_create_response(conn)
-  end
+    response = BankAccounts.open_bank_account(params)
 
-  defp handle_create_response({:ok, bank_account}, conn) do
-    conn
-    |> put_status(200)
-    |> json(bank_account)
-  end
+    case response do
+      {:ok, bank_account} ->
+        conn
+        |> put_status(200)
+        |> json(bank_account)
 
-  defp handle_create_response({:error, :initial_balance_must_be_above_zero}, conn) do
-    conn
-    |> put_status(422)
-    |> json(%{"error" => "Initial balance must be above zero"})
-  end
+      {:error, :account_already_opened} ->
+        conn
+        |> put_status(422)
+        |> json(%{"error" => "Account already opened"})
 
-  defp handle_create_response({:error, :account_already_opened}, conn) do
-    conn
-    |> put_status(422)
-    |> json(%{"error" => "Account already opened"})
-  end
-
-  defp handle_create_response(error, _conn) do
-    error
+      error ->
+        error
+    end
   end
 end

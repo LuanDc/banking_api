@@ -22,10 +22,9 @@ defmodule BankingApi.BankAccounts do
     id = Ecto.UUID.generate()
 
     command =
-      OpenBankAccount.new()
+      params
+      |> OpenBankAccount.new()
       |> OpenBankAccount.assign_id(id)
-      |> OpenBankAccount.assign_account_number(params["account_number"])
-      |> OpenBankAccount.assign_initial_balance(params["initial_balance"])
 
     with :ok <- BankingApiApp.dispatch(command, consistency: :strong) do
       get(id)
