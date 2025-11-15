@@ -31,8 +31,8 @@ defmodule BankingApiWeb.ConnCase do
     end
   end
 
-  setup tags do
-    BankingApi.DataCase.setup_sandbox(tags)
+  setup _tags do
+    BankingApi.Storage.reset!()
     {:ok, conn: Phoenix.ConnTest.build_conn()}
   end
 end

@@ -27,8 +27,8 @@ defmodule BankingApi.DataCase do
     end
   end
 
-  setup tags do
-    BankingApi.DataCase.setup_sandbox(tags)
+  setup _tags do
+    BankingApi.Storage.reset!()
     :ok
   end
 

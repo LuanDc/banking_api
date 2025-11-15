@@ -7,20 +7,21 @@ defmodule BankingApi.Application do
 
   @impl true
   def start(_type, _args) do
-    children = [
-      BankingApiWeb.Telemetry,
-      BankingApi.BankingApiApp,
-      BankingApi.Repo,
-      BankingApi.BankAccounts.Supervisor,
-      {DNSCluster, query: Application.get_env(:banking_api, :dns_cluster_query) || :ignore},
-      {Phoenix.PubSub, name: BankingApi.PubSub},
-      # Start the Finch HTTP client for sending emails
-      {Finch, name: BankingApi.Finch},
-      # Start a worker by calling: BankingApi.Worker.start_link(arg)
-      # {BankingApi.Worker, arg},
-      # Start to serve requests, typically the last entry
-      BankingApiWeb.Endpoint
-    ]
+    children =
+      [
+        BankingApiWeb.Telemetry,
+        BankingApi.Repo,
+        BankingApi.BankingApiApp,
+        BankingApi.BankAccounts.Supervisor,
+        {DNSCluster, query: Application.get_env(:banking_api, :dns_cluster_query) || :ignore},
+        {Phoenix.PubSub, name: BankingApi.PubSub},
+        # Start the Finch HTTP client for sending emails
+        {Finch, name: BankingApi.Finch},
+        # Start a worker by calling: BankingApi.Worker.start_link(arg)
+        # {BankingApi.Worker, arg},
+        # Start to serve requests, typically the last entry
+        BankingApiWeb.Endpoint
+      ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html
     # for other strategies and supported options

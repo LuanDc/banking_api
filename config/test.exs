@@ -1,7 +1,7 @@
 import Config
 
 # Configure your database
-#
+
 # The MIX_TEST_PARTITION environment variable can be used
 # to provide built-in test partitioning in CI environment.
 # Run `mix help test` for more information.
@@ -10,8 +10,15 @@ config :banking_api, BankingApi.Repo,
   password: "postgres",
   hostname: "localhost",
   database: "banking_api_test#{System.get_env("MIX_TEST_PARTITION")}",
-  pool: Ecto.Adapters.SQL.Sandbox,
-  pool_size: System.schedulers_online() * 2
+  pool_size: 1
+
+config :banking_api, BankingApi.EventStore,
+  serializer: EventStore.JsonSerializer,
+  username: "postgres",
+  password: "postgres",
+  hostname: "localhost",
+  database: "banking_api_eventstore_test#{System.get_env("MIX_TEST_PARTITION")}",
+  pool_size: 1
 
 # We don't run a server during test. If one is required,
 # you can enable the server option below.
