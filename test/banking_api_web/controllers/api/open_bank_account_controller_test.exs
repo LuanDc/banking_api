@@ -36,5 +36,17 @@ defmodule BankingApiWeb.Api.OpenBankAccountControllerTest do
                }
              }
     end
+
+    test "fails to open bank account when account number already exists", %{conn: conn} do
+      params = Map.update!(@params, "account_number", &(&1 <> "A"))
+
+      assert conn
+             |> post(~p"/api/bank_account/open", params)
+             |> response(200)
+
+      assert conn
+             |> post(~p"/api/bank_account/open", params)
+             |> json_response(422) == %{"error" => "Account already opened"}
+    end
   end
 end
