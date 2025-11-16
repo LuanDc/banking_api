@@ -6,13 +6,11 @@ defmodule BankingApiWeb.Api.OpenBankAccountController do
   action_fallback BankingApiWeb.FallbackController
 
   def create(conn, params) do
-    response = BankAccounts.open_bank_account(params)
-
-    case response do
-      :ok ->
+    case BankAccounts.open_bank_account(params) do
+      {:ok, bank_account} ->
         conn
         |> put_status(200)
-        |> text("")
+        |> json(bank_account)
 
       {:error, :account_already_opened} ->
         conn

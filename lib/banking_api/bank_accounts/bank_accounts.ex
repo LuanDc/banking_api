@@ -7,7 +7,7 @@ defmodule BankingApi.BankAccounts do
   alias BankingApi.BankAccounts.Projections.BankAccount
   alias BankingApi.Repo
 
-  def get(id) do
+  def get(id) when is_bitstring(id) do
     case Repo.get(BankAccount, id) do
       nil -> {:error, :not_found}
       bank_account -> {:ok, bank_account}
@@ -26,7 +26,9 @@ defmodule BankingApi.BankAccounts do
       |> OpenBankAccount.new()
       |> OpenBankAccount.assign_id(id)
 
-    BankingApiApp.dispatch(command)
+    with :ok <- BankingApiApp.dispatch(command, consistency: :strong) do
+      get(id)
+    end
   end
 
   def deposit(bank_account, params) do
