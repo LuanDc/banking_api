@@ -1,0 +1,12 @@
+//Send Request
+GET http://localhost:4000/api/bank_account/A123456
+
+###
+
+POST http://localhost:4000/api/bank_account/open
+content-type: application/json
+
+{
+    "account_number": "A123456",
+    "initial_balance": 0
+}
