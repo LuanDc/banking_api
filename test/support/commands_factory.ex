@@ -17,7 +17,8 @@ defmodule BankingApi.CommandsFactory do
       %OpenBankAccount{
         id: Ecto.UUID.generate(),
         account_number: "Jane Smith",
-        initial_balance: 0
+        initial_balance: 0,
+        status: "open"
       },
       attrs
     )

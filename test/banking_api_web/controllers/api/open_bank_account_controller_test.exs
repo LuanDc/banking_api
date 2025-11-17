@@ -29,25 +29,42 @@ defmodule BankingApiWeb.Api.OpenBankAccountControllerTest do
     test "fails to open a bank account with negative initial balance", %{conn: conn} do
       params = Map.merge(@params, %{"initial_balance" => -1})
 
+      assert %{
+               "error" => %{"initial_balance" => initial_balance_errors}
+             } =
+               conn
+               |> post(~p"/api/bank_account/open", params)
+               |> json_response(400)
+
+      assert Enum.any?(
+               initial_balance_errors,
+               &(&1 == "must be a number greater than or equal to 0")
+             )
+    end
+
+    test "fails to open bank account when an invalid status is given", %{conn: conn} do
+      params = Map.merge(@params, %{"status" => "invalid_status"})
+
       assert conn
              |> post(~p"/api/bank_account/open", params)
              |> json_response(400) == %{
-               "error" => %{"initial_balance" => ["must be a number greater than or equal to 0"]}
+               "error" => %{"status" => [~s(must be one of ["open", "closed"])]}
              }
     end
 
     test "fails to open bank account when params are empty", %{conn: conn} do
-      assert conn
-             |> post(~p"/api/bank_account/open", @empty_params)
-             |> json_response(400) == %{
+      assert %{
                "error" => %{
-                 "initial_balance" => [
-                   "can't be empty",
-                   "must be a number greater than or equal to 0"
-                 ],
-                 "account_number" => ["can't be empty"]
+                 "initial_balance" => initial_balance_errors,
+                 "account_number" => account_number_errors
                }
-             }
+             } =
+               conn
+               |> post(~p"/api/bank_account/open", @empty_params)
+               |> json_response(400)
+
+      assert Enum.any?(initial_balance_errors, &(&1 == "can't be empty"))
+      assert Enum.any?(account_number_errors, &(&1 == "can't be empty"))
     end
 
     test "fails to open bank account when account number already exists", %{conn: conn} do
