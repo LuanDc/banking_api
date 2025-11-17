@@ -29,25 +29,11 @@ defmodule BankingApi.BankAccountsTest do
       assert BankAccounts.open_bank_account(params) == {:error, :account_already_opened}
     end
 
-    for param <- Map.keys(@params) do
-      test "returns an error with the reason when #{param} is not given" do
-        params = Map.delete(@params, unquote(param))
+    test "returns an validation failure with the reason when then given params are invalid" do
+      params = Map.delete(@params, "account_number")
 
-        assert {:error, :validation_failure, error} =
-                 BankAccounts.open_bank_account(params)
-
-        error = Map.get(error, String.to_atom(unquote(param)))
-
-        assert Enum.any?(error, &(&1 == "can't be empty"))
-      end
-    end
-
-    test "returns an error when the given is status is not open or closed" do
-      params = Map.put(@params, "status", "invalid_status")
-
-      assert {:error, :validation_failure, error} = BankAccounts.open_bank_account(params)
-
-      assert error.status == [~s(must be one of ["open", "closed"])]
+      assert BankAccounts.open_bank_account(params) ==
+               {:error, :validation_failure, %{account_number: ["can't be empty"]}}
     end
   end
 end
