@@ -1,5 +1,5 @@
 defmodule BankingApi.BankAccounts.Commands.OpenBankAccount do
-  defstruct [:id, :account_number, :initial_balance]
+  defstruct [:id, :account_number, :initial_balance, :status]
   use ExConstructor
   use Vex.Struct
 

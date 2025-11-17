@@ -19,14 +19,19 @@ defmodule BankingApi.BankAccounts.Projectors.BankAccount do
     ]
 
   project(
-    %BankAccountOpened{id: id, account_number: account_number, initial_balance: balance},
+    %BankAccountOpened{
+      id: id,
+      account_number: account_number,
+      initial_balance: balance,
+      status: status
+    },
     _metadata,
     fn multi ->
       Ecto.Multi.insert(multi, :bank_account, %BankAccount{
         id: id,
         account_number: account_number,
         balance: balance,
-        status: :open
+        status: String.to_atom(status)
       })
     end
   )
