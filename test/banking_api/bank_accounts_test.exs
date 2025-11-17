@@ -13,8 +13,6 @@ defmodule BankingApi.BankAccountsTest do
       "status" => "open"
     }
 
-    @invalid_params %{}
-
     test "returns the opened account when the account is opened successfully" do
       assert {:ok, %BankAccount{} = bank_account} = BankAccounts.open_bank_account(@params)
       assert Ecto.UUID.cast!(bank_account.id)
@@ -23,17 +21,25 @@ defmodule BankingApi.BankAccountsTest do
       assert bank_account.status == String.to_atom(@params["status"])
     end
 
-    test "returns an error with the reason when a validation error happens in the command layer" do
-      assert {:error, :validation_failure, _reason} =
-               BankAccounts.open_bank_account(@invalid_params)
-    end
-
     test "returns an error with the reason when an error in aggregation layer happens" do
       dispatch(:open_bank_account, account_number: "duplicated_account_number")
 
       params = Map.merge(@params, %{"account_number" => "duplicated_account_number"})
 
       assert BankAccounts.open_bank_account(params) == {:error, :account_already_opened}
+    end
+
+    for param <- Map.keys(@params) do
+      test "returns an error with the reason when #{param} is not given" do
+        params = Map.delete(@params, unquote(param))
+
+        assert {:error, :validation_failure, error} =
+                 BankAccounts.open_bank_account(params)
+
+        error = Map.get(error, String.to_atom(unquote(param)))
+
+        assert Enum.any?(error, &(&1 == "can't be empty"))
+      end
     end
   end
 end
