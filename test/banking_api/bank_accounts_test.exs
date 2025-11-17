@@ -41,5 +41,13 @@ defmodule BankingApi.BankAccountsTest do
         assert Enum.any?(error, &(&1 == "can't be empty"))
       end
     end
+
+    test "returns an error when the given is status is not open or closed" do
+      params = Map.put(@params, "status", "invalid_status")
+
+      assert {:error, :validation_failure, error} = BankAccounts.open_bank_account(params)
+
+      assert error.status == [~s(must be one of ["open", "closed"])]
+    end
   end
 end
