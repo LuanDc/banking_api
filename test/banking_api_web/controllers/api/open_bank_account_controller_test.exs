@@ -6,7 +6,8 @@ defmodule BankingApiWeb.Api.OpenBankAccountControllerTest do
   describe "POST /api/bank_account/open" do
     @params %{
       "initial_balance" => 1000,
-      "account_number" => "1234567890"
+      "account_number" => "1234567890",
+      "status" => "open"
     }
 
     @empty_params %{}
