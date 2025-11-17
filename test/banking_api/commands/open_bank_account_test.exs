@@ -18,4 +18,12 @@ defmodule BankingApi.BankAccounts.Commands.OpenBankAccountTest do
       assert bank_account.status == @params["status"]
     end
   end
+
+  describe "assign_id/2" do
+    test "returns OpenBankAccount command struct with id assigned" do
+      id = Ecto.UUID.generate()
+      bank_account = OpenBankAccount.assign_id(%OpenBankAccount{}, id)
+      assert bank_account.id == id
+    end
+  end
 end
