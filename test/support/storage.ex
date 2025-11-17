@@ -16,15 +16,15 @@ defmodule BankingApi.Storage do
 
   defp reset_readstore do
     config = Application.get_env(:banking_api, BankingApi.Repo)
-
     {:ok, conn} = Postgrex.start_link(config)
-
     Postgrex.query!(conn, truncate_readstore_tables(), [])
   end
 
   defp truncate_readstore_tables do
     """
-    TRUNCATE TABLE bank_accounts
+    TRUNCATE TABLE
+      bank_accounts,
+      projection_versions
     RESTART IDENTITY
     CASCADE;
     """
