@@ -15,7 +15,10 @@ defmodule BankingApi.BankAccounts.Commands.OpenBankAccount do
     number: [greater_than_or_equal_to: 0]
   )
 
-  validates(:status, inclusion: ["open", "closed"])
+  validates(:status,
+    presence: [message: "can't be empty"],
+    inclusion: ["open", "closed"]
+  )
 
   def assign_id(%__MODULE__{} = open_bank_account, id) do
     %__MODULE__{open_bank_account | id: id}
