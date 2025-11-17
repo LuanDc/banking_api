@@ -35,14 +35,23 @@ defmodule BankingApi.BankAccounts.Commands.OpenBankAccountTest do
         refute OpenBankAccount.valid?(open_bank_account_command)
       end
     end
-  end
 
-  test "returns an error when the given is status is not open or closed" do
-    open_bank_account_command = %OpenBankAccount{
-      @open_bank_account_command
-      | status: "invalid_status"
-    }
+    test "returns an error when the given initial balance is not greater than 0" do
+      open_bank_account_command = %OpenBankAccount{
+        @open_bank_account_command
+        | initial_balance: -1
+      }
 
-    refute OpenBankAccount.valid?(open_bank_account_command)
+      refute OpenBankAccount.valid?(open_bank_account_command)
+    end
+
+    test "returns an error when the given is status is not open or closed" do
+      open_bank_account_command = %OpenBankAccount{
+        @open_bank_account_command
+        | status: "invalid_status"
+      }
+
+      refute OpenBankAccount.valid?(open_bank_account_command)
+    end
   end
 end
