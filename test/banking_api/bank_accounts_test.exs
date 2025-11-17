@@ -4,6 +4,8 @@ defmodule BankingApi.BankAccountsTest do
   alias BankingApi.BankAccounts
   alias BankingApi.BankAccounts.Projections.BankAccount
 
+  import BankingApi.CommandsFactory
+
   describe "open_bank_account/1" do
     @params %{
       "initial_balance" => 1000,
@@ -11,12 +13,27 @@ defmodule BankingApi.BankAccountsTest do
       "status" => "open"
     }
 
+    @invalid_params %{}
+
     test "returns the opened account when the account is opened successfully" do
       assert {:ok, %BankAccount{} = bank_account} = BankAccounts.open_bank_account(@params)
       assert Ecto.UUID.cast!(bank_account.id)
       assert bank_account.balance == @params["initial_balance"]
       assert bank_account.account_number == @params["account_number"]
       assert bank_account.status == String.to_atom(@params["status"])
+    end
+
+    test "returns an error with the reason when a validation error happens in the command layer" do
+      assert {:error, :validation_failure, _reason} =
+               BankAccounts.open_bank_account(@invalid_params)
+    end
+
+    test "returns an error with the reason when an error in aggregation layer happens" do
+      dispatch(:open_bank_account, account_number: "duplicated_account_number")
+
+      params = Map.merge(@params, %{"account_number" => "duplicated_account_number"})
+
+      assert BankAccounts.open_bank_account(params) == {:error, :account_already_opened}
     end
   end
 end
