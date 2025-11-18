@@ -27,7 +27,7 @@ defmodule BankingApi.BankAccounts.Commands.OpenBankAccountTest do
       status: "open"
     }
 
-    @required_params [:initial_balance, :account_number, :status]
+    @required_params [:id, :initial_balance, :account_number, :status]
 
     for required_param <- @required_params do
       test "returns false when #{required_param} param is not given" do
@@ -46,14 +46,16 @@ defmodule BankingApi.BankAccounts.Commands.OpenBankAccountTest do
       refute OpenBankAccount.valid?(open_bank_account_command)
     end
 
-    test "returns false when the given is status is not open or closed" do
+    test "returns true when the given is status is open or closed" do
       for status <- ["open", "closed"] do
         assert OpenBankAccount.valid?(%OpenBankAccount{
                  @open_bank_account_command
                  | status: status
                })
       end
+    end
 
+    test "returns false when the given is status is not open or closed" do
       refute OpenBankAccount.valid?(%OpenBankAccount{
                @open_bank_account_command
                | status: "invalid_status"
