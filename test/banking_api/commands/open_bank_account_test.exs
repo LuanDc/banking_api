@@ -37,6 +37,15 @@ defmodule BankingApi.BankAccounts.Commands.OpenBankAccountTest do
       end
     end
 
+    test "returns false when the given id is not UUID" do
+      open_bank_account_command = %OpenBankAccount{
+        @open_bank_account_command
+        | id: "1"
+      }
+
+      refute OpenBankAccount.valid?(open_bank_account_command)
+    end
+
     test "returns false when the given account number is not a string" do
       open_bank_account_command = %OpenBankAccount{
         @open_bank_account_command
