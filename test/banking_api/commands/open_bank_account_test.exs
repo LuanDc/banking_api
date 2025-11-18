@@ -37,6 +37,15 @@ defmodule BankingApi.BankAccounts.Commands.OpenBankAccountTest do
       end
     end
 
+    test "returns false when the given account number is not a string" do
+      open_bank_account_command = %OpenBankAccount{
+        @open_bank_account_command
+        | account_number: 123_456
+      }
+
+      refute OpenBankAccount.valid?(open_bank_account_command)
+    end
+
     test "returns false when the given initial balance is not greater than 0" do
       open_bank_account_command = %OpenBankAccount{
         @open_bank_account_command

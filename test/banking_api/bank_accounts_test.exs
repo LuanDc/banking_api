@@ -21,19 +21,19 @@ defmodule BankingApi.BankAccountsTest do
       assert bank_account.status == String.to_atom(@params["status"])
     end
 
+    test "returns an validation failure with the reason when then given params are invalid" do
+      params = Map.delete(@params, "account_number")
+
+      assert BankAccounts.open_bank_account(params) ==
+               {:error, :validation_failure, %{account_number: ["can't be empty"]}}
+    end
+
     test "returns an error with the reason when an error in aggregation layer happens" do
       dispatch(:open_bank_account, account_number: "duplicated_account_number")
 
       params = Map.merge(@params, %{"account_number" => "duplicated_account_number"})
 
       assert BankAccounts.open_bank_account(params) == {:error, :account_already_opened}
-    end
-
-    test "returns an validation failure with the reason when then given params are invalid" do
-      params = Map.delete(@params, "account_number")
-
-      assert BankAccounts.open_bank_account(params) ==
-               {:error, :validation_failure, %{account_number: ["can't be empty"]}}
     end
   end
 end
