@@ -5,19 +5,19 @@ import Config
 # The MIX_TEST_PARTITION environment variable can be used
 # to provide built-in test partitioning in CI environment.
 # Run `mix help test` for more information.
-config :banking_api, BankingApi.Repo,
-  username: "postgres",
-  password: "postgres",
-  hostname: "localhost",
-  database: "banking_api_test#{System.get_env("MIX_TEST_PARTITION")}",
-  pool_size: 1
-
 config :banking_api, BankingApi.EventStore,
   serializer: EventStore.JsonSerializer,
   username: "postgres",
   password: "postgres",
   hostname: "localhost",
   database: "banking_api_eventstore_test#{System.get_env("MIX_TEST_PARTITION")}",
+  pool_size: 1
+
+config :banking_api, BankingApi.Repo,
+  username: "postgres",
+  password: "postgres",
+  hostname: "localhost",
+  database: "banking_api_test#{System.get_env("MIX_TEST_PARTITION")}",
   pool_size: 1
 
 # We don't run a server during test. If one is required,

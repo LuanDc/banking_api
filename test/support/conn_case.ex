@@ -29,6 +29,8 @@ defmodule BankingApiWeb.ConnCase do
       import Phoenix.ConnTest
       import BankingApiWeb.ConnCase
       import Commanded.Assertions.EventAssertions
+      import BankingApi.CommandsFactory
+      import BankingApi.Factory
     end
   end
 

@@ -6,17 +6,17 @@ defmodule BankingApi.CommandsFactory do
       when is_atom(command) and is_list(attrs) do
     :ok =
       command
-      |> build(attrs)
+      |> build_command(attrs)
       |> BankingApiApp.dispatch()
   end
 
-  def build(:open_bank_account, attrs \\ []) do
+  def build_command(:open_bank_account, attrs \\ []) do
     attrs = Enum.into(attrs, %{})
 
     struct(
       %OpenBankAccount{
         id: Ecto.UUID.generate(),
-        account_number: "Jane Smith",
+        account_number: "ACC-123456",
         initial_balance: 0,
         status: "open"
       },

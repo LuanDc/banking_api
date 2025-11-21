@@ -25,6 +25,8 @@ defmodule BankingApi.DataCase do
       import Ecto.Query
       import Commanded.Assertions.EventAssertions
       import BankingApi.DataCase
+      import BankingApi.CommandsFactory
+      import BankingApi.Factory
     end
   end
 
