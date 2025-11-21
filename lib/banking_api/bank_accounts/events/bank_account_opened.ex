@@ -1,4 +1,4 @@
 defmodule BankingApi.BankAccounts.Events.BankAccountOpened do
   @derive Jason.Encoder
-  defstruct [:account_number, :status]
+  defstruct [:id, :account_number]
 end

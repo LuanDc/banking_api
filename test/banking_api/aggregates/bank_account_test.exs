@@ -6,7 +6,6 @@ defmodule BankingApi.Aggregates.BankAccountTest do
 
   alias BankingApi.BankAccounts.Aggregates.BankAccount
   alias BankingApi.BankingApiApp
-  alias BankingApi.BankAccounts.Events.BankAccountCreated
   alias BankingApi.BankAccounts.Events.BankAccountOpened
   alias BankingApi.BankAccounts.Events.MoneyDeposited
 
@@ -16,20 +15,9 @@ defmodule BankingApi.Aggregates.BankAccountTest do
       command = build_command(:open_bank_account)
       assert :ok = BankingApiApp.dispatch(command)
 
-      wait_for_event(BankingApiApp, BankAccountCreated, fn event ->
-        assert event.id == command.id
-        assert event.account_number == command.account_number
-      end)
-    end
-
-    @tag :unit
-    test "make sure any event of BankAccountOpened type is published" do
-      command = build_command(:open_bank_account)
-      assert :ok = BankingApiApp.dispatch(command)
-
       wait_for_event(BankingApiApp, BankAccountOpened, fn event ->
         assert event.account_number == command.account_number
-        assert event.status == command.status
+        assert event.id == command.id
       end)
     end
 
