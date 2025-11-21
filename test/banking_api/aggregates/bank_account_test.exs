@@ -17,5 +17,12 @@ defmodule BankingApi.Aggregates.BankAccountTest do
         assert event.status == "open"
       end)
     end
+
+    test "returns error when account is already openened" do
+      command = build_command(:open_bank_account, account_number: "ACC-duplicated")
+
+      assert :ok = BankingApiApp.dispatch(command)
+      assert BankingApiApp.dispatch(command) == {:error, :account_already_opened}
+    end
   end
 end
