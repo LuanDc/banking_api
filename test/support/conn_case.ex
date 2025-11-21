@@ -31,6 +31,7 @@ defmodule BankingApiWeb.ConnCase do
       import Commanded.Assertions.EventAssertions
       import BankingApi.CommandsFactory
       import BankingApi.Factory
+      import BankingApi.TestHelper
     end
   end
 

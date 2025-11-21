@@ -5,6 +5,7 @@ defmodule BankingApi.BankAccounts.Projectors.BankAccount do
     name: "BankAccounts.Projectors.BankAccount",
     consistency: :strong
 
+  alias BankingApi.BankAccounts.Events.BankAccountCreated
   alias BankingApi.BankAccounts.Events.BankAccountOpened
   alias BankingApi.BankAccounts.Events.BankAccountClosed
   alias BankingApi.BankAccounts.Events.MoneyDeposited
@@ -19,28 +20,37 @@ defmodule BankingApi.BankAccounts.Projectors.BankAccount do
     ]
 
   project(
-    %BankAccountOpened{
+    %BankAccountCreated{
       id: id,
-      account_number: account_number,
-      initial_balance: balance,
-      status: status
+      account_number: account_number
     },
     _metadata,
     fn multi ->
       Ecto.Multi.insert(multi, :bank_account, %BankAccount{
         id: id,
-        account_number: account_number,
-        balance: balance,
-        status: String.to_atom(status)
+        account_number: account_number
       })
     end
   )
 
   project(
-    %MoneyDeposited{amount: amount, id: id},
+    %BankAccountOpened{
+      account_number: account_number,
+      status: status
+    },
     _metadata,
     fn multi ->
-      update_bank_account(multi, increase_balance_query(id, amount))
+      update_bank_account(multi, bank_account_query(account_number: account_number),
+        status: status
+      )
+    end
+  )
+
+  project(
+    %MoneyDeposited{account_number: account_number, amount: amount},
+    _metadata,
+    fn multi ->
+      update_bank_account(multi, increase_balance_query(account_number, amount))
     end
   )
 
