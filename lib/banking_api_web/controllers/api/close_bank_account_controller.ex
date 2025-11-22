@@ -6,19 +6,10 @@ defmodule BankingApiWeb.Api.CloseBankAccountController do
   action_fallback BankingApiWeb.FallbackController
 
   def create(conn, params) do
-    case BankAccounts.close_bank_account(params) do
-      {:ok, bank_account} ->
-        conn
-        |> put_status(201)
-        |> json(bank_account)
-
-      {:error, :account_closed} ->
-        conn
-        |> put_status(422)
-        |> json(%{"error" => "Account closed"})
-
-      error ->
-        error
+    with {:ok, bank_account} <- BankAccounts.close_bank_account(params) do
+      conn
+      |> put_status(201)
+      |> json(bank_account)
     end
   end
 end

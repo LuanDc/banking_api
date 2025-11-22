@@ -34,15 +34,24 @@ defmodule BankingApi.BankAccounts.Aggregates.BankAccount do
   end
 
   @impl Aggregate
-  def execute(%BankAccount{id: id}, %OpenBankAccount{}) when is_binary(id) do
+  def execute(%BankAccount{account_number: account_number}, %OpenBankAccount{})
+      when is_binary(account_number) do
     {:error, :account_already_opened}
   end
 
   # Close Bank Account
 
   @impl Aggregate
-  def execute(%BankAccount{status: :open}, %CloseBankAccount{account_number: account_number}) do
+  def execute(%BankAccount{account_number: account_number, status: :open}, %CloseBankAccount{
+        account_number: account_number
+      })
+      when not is_nil(account_number) do
     %BankAccountClosed{account_number: account_number, status: :closed}
+  end
+
+  @impl Aggregate
+  def execute(%BankAccount{account_number: nil}, %CloseBankAccount{}) do
+    {:error, :not_found}
   end
 
   # Deposit Money

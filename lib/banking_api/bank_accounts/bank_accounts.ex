@@ -63,8 +63,19 @@ defmodule BankingApi.BankAccounts do
   end
 
   def close_bank_account(params) do
-    with :ok <- BankingApiApp.dispatch(CloseBankAccount.new(params), consistency: :strong) do
+    response = BankingApiApp.dispatch(CloseBankAccount.new(params), consistency: :strong)
+
+    if dispatched_successfully?(response) or
+         is_account_closed?(response) do
       get_by(account_number: params["account_number"])
+    else
+      response
     end
   end
+
+  defp dispatched_successfully?(:ok), do: true
+  defp dispatched_successfully?({:error, _}), do: false
+
+  defp is_account_closed?({:error, :account_closed}), do: true
+  defp is_account_closed?({:error, _}), do: false
 end

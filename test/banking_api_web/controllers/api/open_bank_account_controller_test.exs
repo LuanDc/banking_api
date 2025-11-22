@@ -50,19 +50,4 @@ defmodule BankingApiWeb.Api.OpenBankAccountControllerTest do
       assert errors == %{"account_number" => ["can't be empty"]}
     end
   end
-
-  describe "POST /api/bank_account/close" do
-    @tag :web
-    test "successfully close a bank account and respond with 201 status code", %{conn: conn} do
-      command = dispatch(:open_bank_account)
-      account_number = command.account_number
-
-      response =
-        conn
-        |> post(~p"/api/bank_account/#{account_number}/close", %{})
-        |> json_response(201)
-
-      assert %{"account_number" => ^account_number, "status" => "closed"} = response
-    end
-  end
 end

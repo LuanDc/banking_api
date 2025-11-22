@@ -1,6 +1,7 @@
 defmodule BankingApi.CommandsFactory do
   alias BankingApi.BankingApiApp
   alias BankingApi.BankAccounts.Commands.OpenBankAccount
+  alias BankingApi.BankAccounts.Commands.CloseBankAccount
 
   def dispatch(command, attrs \\ [])
       when is_atom(command) and is_list(attrs) do
@@ -9,7 +10,9 @@ defmodule BankingApi.CommandsFactory do
     command
   end
 
-  def build_command(:open_bank_account, attrs \\ []) do
+  def build_command(command, attrs \\ [])
+
+  def build_command(:open_bank_account, attrs) do
     attrs = Enum.into(attrs, %{})
 
     struct(
@@ -21,5 +24,10 @@ defmodule BankingApi.CommandsFactory do
       },
       attrs
     )
+  end
+
+  def build_command(:close_bank_account, attrs) do
+    attrs = Enum.into(attrs, %{})
+    struct(%CloseBankAccount{account_number: "ACC-123456"}, attrs)
   end
 end

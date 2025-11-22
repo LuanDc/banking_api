@@ -9,6 +9,12 @@ defmodule BankingApiWeb.FallbackController do
     |> json(%{"error" => reason})
   end
 
+  def call(conn, {:error, :not_found}) do
+    conn
+    |> put_status(404)
+    |> json(%{"error" => "Not found!"})
+  end
+
   def call(conn, {:error, _reason} = error) do
     Logger.error("Internal server error: #{inspect(error)}")
 
