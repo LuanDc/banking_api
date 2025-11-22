@@ -11,17 +11,14 @@ defmodule BankingApi.BankAccounts.Queries do
     from(ba in BankAccount, where: ba.id == ^bank_account_uuid)
   end
 
-  def increase_balance_query(account_number, amount) do
-    from(ba in BankAccount,
-      where: ba.account_number == ^account_number,
-      update: [inc: [balance: ^amount]]
-    )
-  end
-
   def decrease_balance_query(id, amount) do
     from(ba in BankAccount,
       where: ba.id == ^id,
       update: [inc: [balance: ^(-amount)]]
     )
+  end
+
+  def update_bank_account(multi, query, changes \\ []) do
+    Ecto.Multi.update_all(multi, :bank_account, query, set: changes)
   end
 end

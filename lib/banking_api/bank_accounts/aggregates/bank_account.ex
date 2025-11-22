@@ -28,13 +28,9 @@ defmodule BankingApi.BankAccounts.Aggregates.BankAccount do
     bank_account
     |> Multi.new()
     |> Multi.execute(fn _ -> bank_account_opened(id, account_number) end)
-    |> Multi.execute(fn _ -> money_deposit(account_number, initial_balance) end)
-  end
-
-  @impl Aggregate
-  def execute(%BankAccount{}, %OpenBankAccount{initial_balance: initial_balance})
-      when initial_balance < 0 do
-    {:error, :initial_balance_must_be_above_zero}
+    |> Multi.execute(fn bank_account ->
+      money_deposited(bank_account, account_number, initial_balance)
+    end)
   end
 
   @impl Aggregate
@@ -63,7 +59,7 @@ defmodule BankingApi.BankAccounts.Aggregates.BankAccount do
         }
       )
       when amount > 0 do
-    %MoneyDeposited{account_number: account_number, amount: amount}
+    %MoneyDeposited{account_number: account_number, balance: amount}
   end
 
   @impl Aggregate
@@ -120,13 +116,21 @@ defmodule BankingApi.BankAccounts.Aggregates.BankAccount do
 
   @impl Aggregate
   def apply(%BankAccount{} = account, %BankAccountOpened{} = event) do
-    %BankAccountOpened{id: id, account_number: account_number} = event
-    %BankAccount{account | id: id, account_number: account_number, status: "open", balance: 0}
+    %BankAccountOpened{id: id, account_number: account_number, balance: balance, status: status} =
+      event
+
+    %BankAccount{
+      account
+      | id: id,
+        account_number: account_number,
+        status: status,
+        balance: balance
+    }
   end
 
-  def apply(%BankAccount{balance: balance} = account, %MoneyDeposited{} = event) do
-    %MoneyDeposited{amount: amount} = event
-    %BankAccount{account | balance: balance + amount}
+  def apply(%BankAccount{} = account, %MoneyDeposited{} = event) do
+    %MoneyDeposited{balance: balance} = event
+    %BankAccount{account | balance: balance}
   end
 
   def apply(%BankAccount{balance: balance} = account, %MoneyWithdrawn{} = event) do
@@ -144,14 +148,16 @@ defmodule BankingApi.BankAccounts.Aggregates.BankAccount do
   defp bank_account_opened(id, account_number) do
     %BankAccountOpened{
       account_number: account_number,
-      id: id
+      id: id,
+      balance: 0,
+      status: :open
     }
   end
 
-  defp money_deposit(account_number, initial_balance) do
+  defp money_deposited(bank_account, account_number, amount) do
     %MoneyDeposited{
       account_number: account_number,
-      amount: initial_balance
+      balance: bank_account.balance + amount
     }
   end
 end

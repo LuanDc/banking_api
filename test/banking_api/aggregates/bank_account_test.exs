@@ -28,7 +28,7 @@ defmodule BankingApi.Aggregates.BankAccountTest do
 
       wait_for_event(BankingApiApp, MoneyDeposited, fn event ->
         assert event.account_number == command.account_number
-        assert event.amount == command.initial_balance
+        assert event.balance == command.initial_balance
       end)
     end
 

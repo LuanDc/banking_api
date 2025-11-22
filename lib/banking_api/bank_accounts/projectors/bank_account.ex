@@ -14,31 +14,36 @@ defmodule BankingApi.BankAccounts.Projectors.BankAccount do
   import BankingApi.BankAccounts.Queries,
     only: [
       bank_account_query: 1,
-      increase_balance_query: 2,
-      decrease_balance_query: 2
+      decrease_balance_query: 2,
+      update_bank_account: 2,
+      update_bank_account: 3
     ]
 
   project(
     %BankAccountOpened{
       id: id,
-      account_number: account_number
+      account_number: account_number,
+      balance: balance,
+      status: status
     },
     _metadata,
     fn multi ->
       Ecto.Multi.insert(multi, :bank_account, %BankAccount{
         id: id,
         account_number: account_number,
-        status: :open,
-        balance: 0
+        status: String.to_existing_atom(status),
+        balance: balance
       })
     end
   )
 
   project(
-    %MoneyDeposited{account_number: account_number, amount: amount},
+    %MoneyDeposited{account_number: account_number, balance: balance},
     _metadata,
     fn multi ->
-      update_bank_account(multi, increase_balance_query(account_number, amount))
+      update_bank_account(multi, bank_account_query(account_number: account_number),
+        balance: balance
+      )
     end
   )
 
@@ -57,8 +62,4 @@ defmodule BankingApi.BankAccounts.Projectors.BankAccount do
       update_bank_account(multi, bank_account_query(id), status: :closed)
     end
   )
-
-  defp update_bank_account(multi, query, changes \\ []) do
-    Ecto.Multi.update_all(multi, :bank_account, query, set: changes)
-  end
 end
