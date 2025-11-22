@@ -41,11 +41,8 @@ defmodule BankingApi.BankAccounts.Aggregates.BankAccount do
   # Close Bank Account
 
   @impl Aggregate
-  def execute(%BankAccount{status: :open}, %CloseBankAccount{
-        id: id,
-        account_number: account_number
-      }) do
-    %BankAccountClosed{id: id, account_number: account_number}
+  def execute(%BankAccount{status: :open}, %CloseBankAccount{account_number: account_number}) do
+    %BankAccountClosed{account_number: account_number, status: :closed}
   end
 
   # Deposit Money

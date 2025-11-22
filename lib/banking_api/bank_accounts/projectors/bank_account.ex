@@ -56,10 +56,12 @@ defmodule BankingApi.BankAccounts.Projectors.BankAccount do
   )
 
   project(
-    %BankAccountClosed{id: id},
+    %BankAccountClosed{account_number: account_number, status: status},
     _metadata,
     fn multi ->
-      update_bank_account(multi, bank_account_query(id), status: :closed)
+      update_bank_account(multi, bank_account_query(account_number: account_number),
+        status: status
+      )
     end
   )
 end

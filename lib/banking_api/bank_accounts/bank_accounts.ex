@@ -14,6 +14,13 @@ defmodule BankingApi.BankAccounts do
     end
   end
 
+  def get_by(filters) when is_list(filters) do
+    case Repo.get_by(BankAccount, filters) do
+      nil -> {:error, :not_found}
+      bank_account -> {:ok, bank_account}
+    end
+  end
+
   def get_by!(filters) when is_list(filters) do
     Repo.get_by!(BankAccount, filters)
   end
@@ -55,14 +62,9 @@ defmodule BankingApi.BankAccounts do
     end
   end
 
-  def close_bank_account(bank_account) do
-    command =
-      CloseBankAccount.new()
-      |> CloseBankAccount.assign_id(bank_account.id)
-      |> CloseBankAccount.assign_account_number(bank_account.account_number)
-
-    with :ok <- BankingApiApp.dispatch(command, consistency: :strong) do
-      get(bank_account.id)
+  def close_bank_account(params) do
+    with :ok <- BankingApiApp.dispatch(CloseBankAccount.new(params), consistency: :strong) do
+      get_by(account_number: params["account_number"])
     end
   end
 end

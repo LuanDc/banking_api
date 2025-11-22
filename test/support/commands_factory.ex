@@ -2,12 +2,11 @@ defmodule BankingApi.CommandsFactory do
   alias BankingApi.BankingApiApp
   alias BankingApi.BankAccounts.Commands.OpenBankAccount
 
-  def dispatch(command, attrs)
+  def dispatch(command, attrs \\ [])
       when is_atom(command) and is_list(attrs) do
-    :ok =
-      command
-      |> build_command(attrs)
-      |> BankingApiApp.dispatch()
+    command = build_command(command, attrs)
+    :ok = BankingApiApp.dispatch(command, consistency: :strong)
+    command
   end
 
   def build_command(:open_bank_account, attrs \\ []) do

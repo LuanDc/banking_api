@@ -5,10 +5,8 @@ defmodule BankingApiWeb.Api.CloseBankAccountController do
 
   action_fallback BankingApiWeb.FallbackController
 
-  def create(conn, %{"account_number" => account_number}) do
-    bank_account = BankAccounts.get_by!(account_number: account_number)
-
-    case BankAccounts.close_bank_account(bank_account) do
+  def create(conn, params) do
+    case BankAccounts.close_bank_account(params) do
       {:ok, bank_account} ->
         conn
         |> put_status(201)

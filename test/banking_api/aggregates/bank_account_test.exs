@@ -4,7 +4,6 @@ defmodule BankingApi.Aggregates.BankAccountTest do
 
   import Commanded.Assertions.EventAssertions
 
-  alias BankingApi.BankAccounts.Aggregates.BankAccount
   alias BankingApi.BankingApiApp
   alias BankingApi.BankAccounts.Events.BankAccountOpened
   alias BankingApi.BankAccounts.Events.MoneyDeposited
