@@ -2,6 +2,7 @@ defmodule BankingApi.BankAccountsTest do
   use BankingApi.DataCase
 
   alias BankingApi.BankAccounts
+  alias BankingApi.BankAccounts.Commands.OpenBankAccount
   alias BankingApi.BankAccounts.Projections.BankAccount
 
   import BankingApi.CommandsFactory
@@ -67,7 +68,10 @@ defmodule BankingApi.BankAccountsTest do
 
     @tag :integration
     test "returns an error when account already opened" do
-      dispatch(:open_bank_account, account_number: "duplicated_account_number")
+      dispatch(%OpenBankAccount{},
+        account_number: "duplicated_account_number"
+      )
+
       params = %{@params | "account_number" => "duplicated_account_number"}
       assert BankAccounts.open_bank_account(params) == {:error, :account_already_opened}
     end

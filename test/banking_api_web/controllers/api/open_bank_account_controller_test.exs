@@ -3,6 +3,8 @@ defmodule BankingApiWeb.Api.OpenBankAccountControllerTest do
 
   import BankingApi.CommandsFactory
 
+  alias BankingApi.BankAccounts.Commands.OpenBankAccount
+
   describe "POST /api/bank_account/open" do
     @params %{
       "initial_balance" => 1000,
@@ -12,29 +14,25 @@ defmodule BankingApiWeb.Api.OpenBankAccountControllerTest do
 
     @tag :web
     test "successfully opens a bank account and respond with 201 status code", %{conn: conn} do
-      response =
-        conn
-        |> post(~p"/api/bank_account/open", @params)
-        |> json_response(201)
+      conn = post(conn, ~p"/api/bank_account/open", @params)
 
       assert %{
                "account_number" => "1234567890",
                "balance" => 1000,
                "id" => _,
                "status" => "open"
-             } = response
+             } = json_response(conn, 201)
     end
 
     @tag :web
     test "fails to open bank account when account number already exists and respond with 422 status code",
          %{conn: conn} do
-      dispatch(:open_bank_account, account_number: "duplicated_account_number")
+      dispatch(%OpenBankAccount{}, account_number: "duplicated_account_number")
 
       params = Map.merge(@params, %{"account_number" => "duplicated_account_number"})
+      conn = post(conn, ~p"/api/bank_account/open", params)
 
-      assert conn
-             |> post(~p"/api/bank_account/open", params)
-             |> json_response(422) == %{"error" => "Account already opened"}
+      assert json_response(conn, 422) == %{"error" => "Account already opened"}
     end
 
     @tag :web

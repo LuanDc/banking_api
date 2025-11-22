@@ -3,10 +3,12 @@ defmodule BankingApiWeb.Api.CloseBankAccountControllerTest do
 
   import BankingApi.CommandsFactory
 
+  alias BankingApi.BankAccounts.Commands.OpenBankAccount
+
   describe "POST /api/bank_account/:account_number/close" do
     @tag :web
     test "successfully close a bank account and respond with 201 status code", %{conn: conn} do
-      %{account_number: account_number} = dispatch(:open_bank_account)
+      %{account_number: account_number} = dispatch(%OpenBankAccount{})
 
       response =
         conn
