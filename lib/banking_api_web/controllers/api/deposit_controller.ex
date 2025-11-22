@@ -5,10 +5,8 @@ defmodule BankingApiWeb.Api.DepositController do
 
   action_fallback BankingApiWeb.FallbackController
 
-  def create(conn, %{"account_number" => account_number} = params) do
-    bank_account = BankAccounts.get_by!(account_number: account_number)
-
-    case BankAccounts.deposit(bank_account, params) do
+  def create(conn, params) do
+    case BankAccounts.deposit(params) do
       {:ok, bank_account} ->
         conn
         |> put_status(201)

@@ -38,15 +38,11 @@ defmodule BankingApi.BankAccounts do
     end
   end
 
-  def deposit(bank_account, params) do
-    command =
-      DepositMoney.new()
-      |> DepositMoney.assign_id(bank_account.id)
-      |> DepositMoney.assign_account_number(params["account_number"])
-      |> DepositMoney.assign_amount(params["amount"])
+  def deposit(params) do
+    command = DepositMoney.new(params)
 
     with :ok <- BankingApiApp.dispatch(command, consistency: :strong) do
-      get(bank_account.id)
+      get_by(account_number: params["account_number"])
     end
   end
 
