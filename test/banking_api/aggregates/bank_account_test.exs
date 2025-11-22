@@ -16,8 +16,12 @@ defmodule BankingApi.Aggregates.BankAccountTest do
       assert :ok = BankingApiApp.dispatch(command)
 
       wait_for_event(BankingApiApp, BankAccountOpened, fn event ->
-        assert event.account_number == command.account_number
-        assert event.id == command.id
+        assert event == %BankAccountOpened{
+                 account_number: command.account_number,
+                 id: command.id,
+                 balance: 0,
+                 status: "open"
+               }
       end)
     end
 
@@ -27,19 +31,10 @@ defmodule BankingApi.Aggregates.BankAccountTest do
       assert :ok = BankingApiApp.dispatch(command)
 
       wait_for_event(BankingApiApp, MoneyDeposited, fn event ->
-        assert event.account_number == command.account_number
-        assert event.balance == command.initial_balance
-      end)
-    end
-
-    @tag :unit
-    test "make sure aggregate state are what we wanted" do
-      command = build_command(:open_bank_account)
-      assert :ok = BankingApiApp.dispatch(command)
-
-      wait_for_event(BankingApiApp, BankAccountOpened, fn event ->
-        bank_account = BankAccount.apply(%BankAccount{}, event)
-        assert bank_account.status == command.status
+        assert event == %MoneyDeposited{
+                 account_number: command.account_number,
+                 balance: command.initial_balance
+               }
       end)
     end
   end
