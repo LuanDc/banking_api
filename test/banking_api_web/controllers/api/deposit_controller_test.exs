@@ -5,7 +5,7 @@ defmodule BankingApiWeb.Api.DepositControllerTest do
   @invalid_attrs %{"amount" => nil}
 
   describe "POST /api/bank_account/:account_number/deposit" do
-    test "renders deposit when data is valid", %{conn: conn} do
+    test "successfully deposit when data is valid", %{conn: conn} do
       %{account_number: account_number} = dispatch(:open_bank_account)
 
       conn =
@@ -19,7 +19,7 @@ defmodule BankingApiWeb.Api.DepositControllerTest do
              } = json_response(conn, 201)
     end
 
-    test "renders errors when data is invalid", %{conn: conn} do
+    test "respond with errors when data is invalid", %{conn: conn} do
       %{account_number: account_number} = dispatch(:open_bank_account)
 
       conn =
@@ -30,12 +30,16 @@ defmodule BankingApiWeb.Api.DepositControllerTest do
 
     @tag :web
     test "respond with 404 when account with the given number is not found", %{conn: conn} do
-      response =
-        conn
-        |> post(~p"/api/bank_account/ACC-123/deposit", @create_attrs)
-        |> json_response(404)
+      conn = post(conn, ~p"/api/bank_account/ACC-123/deposit", @create_attrs)
+      assert json_response(conn, 404) == %{"error" => "Not found!"}
+    end
 
-      assert response == %{"error" => "Not found!"}
+    @tag :web
+    test "respond with 422 when account is already closed", %{conn: conn} do
+      %{account_number: account_number} = dispatch(:open_bank_account)
+      dispatch(:close_bank_account)
+      conn = post(conn, ~p"/api/bank_account/#{account_number}/deposit", @create_attrs)
+      assert json_response(conn, 422) == %{"error" => "Account closed"}
     end
   end
 end
