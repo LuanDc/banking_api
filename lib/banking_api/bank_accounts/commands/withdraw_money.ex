@@ -1,5 +1,5 @@
 defmodule BankingApi.BankAccounts.Commands.WithdrawMoney do
-  defstruct [:id, :account_number, :amount]
+  defstruct [:account_number, :amount]
   use ExConstructor
   use Vex.Struct
 

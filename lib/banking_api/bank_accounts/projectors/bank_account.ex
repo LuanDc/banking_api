@@ -14,8 +14,6 @@ defmodule BankingApi.BankAccounts.Projectors.BankAccount do
   import BankingApi.BankAccounts.Queries,
     only: [
       bank_account_query: 1,
-      decrease_balance_query: 2,
-      update_bank_account: 2,
       update_bank_account: 3
     ]
 
@@ -48,10 +46,12 @@ defmodule BankingApi.BankAccounts.Projectors.BankAccount do
   )
 
   project(
-    %MoneyWithdrawn{amount: amount, id: id},
+    %MoneyWithdrawn{account_number: account_number, balance: balance},
     _metadata,
     fn multi ->
-      update_bank_account(multi, decrease_balance_query(id, amount))
+      update_bank_account(multi, bank_account_query(account_number: account_number),
+        balance: balance
+      )
     end
   )
 

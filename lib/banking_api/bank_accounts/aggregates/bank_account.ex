@@ -34,8 +34,7 @@ defmodule BankingApi.BankAccounts.Aggregates.BankAccount do
   end
 
   @impl Aggregate
-  def execute(%BankAccount{account_number: account_number}, %OpenBankAccount{})
-      when is_binary(account_number) do
+  def execute(%BankAccount{}, %OpenBankAccount{}) do
     {:error, :account_already_opened}
   end
 
@@ -49,24 +48,18 @@ defmodule BankingApi.BankAccounts.Aggregates.BankAccount do
     %BankAccountClosed{account_number: account_number, status: :closed}
   end
 
-  @impl Aggregate
-  def execute(%BankAccount{account_number: nil}, %command{})
-      when command in [CloseBankAccount, DepositMoney, WithdrawMoney] do
-    {:error, :not_found}
-  end
-
   # Deposit Money
 
   @impl Aggregate
   def execute(
-        %BankAccount{status: :open},
+        %BankAccount{balance: balance, status: :open},
         %DepositMoney{
           account_number: account_number,
           amount: amount
         }
       )
       when amount > 0 do
-    %MoneyDeposited{account_number: account_number, balance: amount}
+    %MoneyDeposited{account_number: account_number, amount: amount, balance: balance + amount}
   end
 
   @impl Aggregate
@@ -84,13 +77,12 @@ defmodule BankingApi.BankAccounts.Aggregates.BankAccount do
   def execute(
         %BankAccount{status: :open, balance: balance},
         %WithdrawMoney{
-          id: id,
           account_number: account_number,
           amount: amount
         }
       )
       when amount > 0 and amount <= balance do
-    %MoneyWithdrawn{id: id, account_number: account_number, amount: amount}
+    %MoneyWithdrawn{account_number: account_number, amount: amount, balance: balance - amount}
   end
 
   @impl Aggregate
@@ -119,6 +111,12 @@ defmodule BankingApi.BankAccounts.Aggregates.BankAccount do
     {:error, :account_closed}
   end
 
+  @impl Aggregate
+  def execute(%BankAccount{account_number: nil}, %command{})
+      when command in [CloseBankAccount, DepositMoney, WithdrawMoney] do
+    {:error, :not_found}
+  end
+
   # Apply Events
 
   @impl Aggregate
@@ -140,9 +138,9 @@ defmodule BankingApi.BankAccounts.Aggregates.BankAccount do
     %BankAccount{account | balance: balance}
   end
 
-  def apply(%BankAccount{balance: balance} = account, %MoneyWithdrawn{} = event) do
-    %MoneyWithdrawn{amount: amount} = event
-    %BankAccount{account | balance: balance - amount}
+  def apply(%BankAccount{} = account, %MoneyWithdrawn{} = event) do
+    %MoneyWithdrawn{balance: balance} = event
+    %BankAccount{account | balance: balance}
   end
 
   @impl Aggregate
