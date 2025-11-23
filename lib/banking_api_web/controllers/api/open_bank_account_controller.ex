@@ -7,10 +7,10 @@ defmodule BankingApiWeb.Api.OpenBankAccountController do
 
   def create(conn, params) do
     case BankAccounts.open_bank_account(params) do
-      {:ok, bank_account} ->
+      :ok ->
         conn
         |> put_status(201)
-        |> json(bank_account)
+        |> text("")
 
       {:error, :account_already_opened} ->
         conn

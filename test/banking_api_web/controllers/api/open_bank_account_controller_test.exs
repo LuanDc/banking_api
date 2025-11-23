@@ -15,19 +15,13 @@ defmodule BankingApiWeb.Api.OpenBankAccountControllerTest do
     @invalid_params %{"account_number" => nil}
 
     @tag :web
-    test "success: opens a bank account, returns account record", %{conn: conn} do
+    test "success: opens a bank account", %{conn: conn} do
       conn = post(conn, ~p"/api/bank_account/open", @open_account_params)
-
-      assert %{
-               "account_number" => "0001-01",
-               "balance" => 1000,
-               "id" => _,
-               "status" => "open"
-             } = json_response(conn, 201)
+      assert response(conn, 201)
     end
 
     @tag :web
-    test "error: returns error when the given account already exists", %{
+    test "error: returns error, when the given account already exists", %{
       conn: conn
     } do
       dispatch(%OpenBankAccount{}, account_number: "duplicated_account_number")
@@ -40,7 +34,7 @@ defmodule BankingApiWeb.Api.OpenBankAccountControllerTest do
     end
 
     @tag :web
-    test "error: does not open account, returns when the given attributes are invalid", %{
+    test "error: returns error, when the given attributes are invalid", %{
       conn: conn
     } do
       conn = post(conn, ~p"/api/bank_account/open", @invalid_params)

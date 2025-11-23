@@ -10,19 +10,16 @@ defmodule BankingApiWeb.Api.CloseBankAccountControllerTest do
     @invalid_attrs %{"account_number" => nil}
 
     @tag :web
-    test "success: closes a bank account, returns account record", %{conn: conn} do
+    test "success: closes a bank account", %{conn: conn} do
       dispatch(%OpenBankAccount{}, account_number: @close_attrs["account_number"])
 
       conn = post(conn, ~p"/api/bank_account/close", @close_attrs)
 
-      response = json_response(conn, 201)
-
-      assert response["account_number"] == @close_attrs["account_number"]
-      assert response["status"] == "closed"
+      assert response(conn, 201)
     end
 
     @tag :web
-    test "error: does not closes account, returns when the given attributes are invalid", %{
+    test "error: returns error, when the given attributes are invalid", %{
       conn: conn
     } do
       conn = post(conn, ~p"/api/bank_account/open", @invalid_attrs)
@@ -31,7 +28,7 @@ defmodule BankingApiWeb.Api.CloseBankAccountControllerTest do
     end
 
     @tag :web
-    test "error: returns error when account with the given number is not found", %{conn: conn} do
+    test "error: returns error, when account with the given number is not found", %{conn: conn} do
       invalid_attrs = %{"account_number" => "ACC-NON-EXISTENT"}
 
       conn = post(conn, ~p"/api/bank_account/close", invalid_attrs)

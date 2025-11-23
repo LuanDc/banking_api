@@ -33,41 +33,18 @@ defmodule BankingApi.BankAccounts do
       |> OpenBankAccount.new()
       |> OpenBankAccount.assign_id(id)
 
-    with :ok <- BankingApiApp.dispatch(command, consistency: :strong) do
-      get(id)
-    end
+    BankingApiApp.dispatch(command, consistency: :strong)
   end
 
   def deposit(params) do
-    command = DepositMoney.new(params)
-
-    with :ok <- BankingApiApp.dispatch(command, consistency: :strong) do
-      get_by(account_number: params["account_number"])
-    end
+    BankingApiApp.dispatch(DepositMoney.new(params), consistency: :strong)
   end
 
   def withdraw(params) do
-    command = WithdrawMoney.new(params)
-
-    with :ok <- BankingApiApp.dispatch(command, consistency: :strong) do
-      get_by(account_number: params["account_number"])
-    end
+    BankingApiApp.dispatch(WithdrawMoney.new(params), consistency: :strong)
   end
 
   def close_bank_account(params) do
-    response = BankingApiApp.dispatch(CloseBankAccount.new(params), consistency: :strong)
-
-    if dispatched_successfully?(response) or
-         is_account_closed?(response) do
-      get_by(account_number: params["account_number"])
-    else
-      response
-    end
+    BankingApiApp.dispatch(CloseBankAccount.new(params), consistency: :strong)
   end
-
-  defp dispatched_successfully?(:ok), do: true
-  defp dispatched_successfully?(_), do: false
-
-  defp is_account_closed?({:error, :account_closed}), do: true
-  defp is_account_closed?(_), do: false
 end

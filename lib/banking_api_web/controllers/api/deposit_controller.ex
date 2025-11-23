@@ -7,10 +7,10 @@ defmodule BankingApiWeb.Api.DepositController do
 
   def create(conn, params) do
     case BankAccounts.deposit(params) do
-      {:ok, bank_account} ->
+      :ok ->
         conn
         |> put_status(201)
-        |> json(bank_account)
+        |> text("")
 
       {:error, :account_closed} ->
         conn

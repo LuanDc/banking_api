@@ -7,10 +7,10 @@ defmodule BankingApiWeb.Api.WithdrawController do
 
   def create(conn, params) do
     case BankAccounts.withdraw(params) do
-      {:ok, bank_account} ->
+      :ok ->
         conn
         |> put_status(201)
-        |> json(bank_account)
+        |> text("")
 
       {:error, :insufficient_funds} ->
         conn

@@ -15,10 +15,7 @@ defmodule BankingApiWeb.Api.WithdrawControllerTest do
 
       conn = post(conn, ~p"/api/bank_account/withdraw", @create_attrs)
 
-      response = json_response(conn, 201)
-
-      assert response["account_number"] == @create_attrs["account_number"]
-      assert response["balance"] == 100
+      assert response(conn, 201)
     end
 
     @tag :web
