@@ -6,15 +6,17 @@ defmodule BankingApiWeb.Api.OpenBankAccountControllerTest do
   alias BankingApi.BankAccounts.Commands.OpenBankAccount
 
   describe "POST /api/bank_account/open" do
-    @params %{
+    @open_account_params %{
       "initial_balance" => 1000,
       "account_number" => "1234567890",
       "status" => "open"
     }
 
+    @invalid_params %{"account_number" => nil}
+
     @tag :web
-    test "successfully opens a bank account and respond with 201 status code", %{conn: conn} do
-      conn = post(conn, ~p"/api/bank_account/open", @params)
+    test "success: opens a bank account, returns account record", %{conn: conn} do
+      conn = post(conn, ~p"/api/bank_account/open", @open_account_params)
 
       assert %{
                "account_number" => "1234567890",
@@ -25,21 +27,24 @@ defmodule BankingApiWeb.Api.OpenBankAccountControllerTest do
     end
 
     @tag :web
-    test "fails to open bank account when account number already exists and respond with 422 status code",
-         %{conn: conn} do
+    test "error: returns when the given account already exists", %{
+      conn: conn
+    } do
       dispatch(%OpenBankAccount{}, account_number: "duplicated_account_number")
 
-      params = Map.merge(@params, %{"account_number" => "duplicated_account_number"})
+      params = Map.merge(@open_account_params, %{"account_number" => "duplicated_account_number"})
+
       conn = post(conn, ~p"/api/bank_account/open", params)
 
       assert json_response(conn, 422) == %{"error" => "Account already opened"}
     end
 
     @tag :web
-    test "fails to open bank account when a validation error happens and respond with 400 status code",
-         %{conn: conn} do
-      params = Map.merge(@params, %{"account_number" => nil})
-      conn = post(conn, ~p"/api/bank_account/open", params)
+    test "error: does not open account, returns when the given attributes are invalid", %{
+      conn: conn
+    } do
+      conn = post(conn, ~p"/api/bank_account/open", @invalid_params)
+
       assert json_response(conn, 400)["error"] != %{}
     end
   end
