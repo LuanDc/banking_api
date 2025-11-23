@@ -51,7 +51,7 @@ defmodule BankingApi.BankAccounts.Aggregates.BankAccount do
 
   @impl Aggregate
   def execute(%BankAccount{account_number: nil}, %command{})
-      when command in [CloseBankAccount, DepositMoney] do
+      when command in [CloseBankAccount, DepositMoney, WithdrawMoney] do
     {:error, :not_found}
   end
 

@@ -20,10 +20,10 @@ defmodule BankingApiWeb.Router do
     get "/bank_account/:account_number", BankAccountController, :get
 
     post "/bank_account/open", OpenBankAccountController, :create
-    post "/bank_account/:account_number/close", CloseBankAccountController, :create
+    post "/bank_account/close", CloseBankAccountController, :create
 
-    post "/bank_account/:account_number/deposit", DepositController, :create
-    post "/bank_account/:account_number/withdraw", WithdrawController, :create
+    post "/bank_account/deposit", DepositController, :create
+    post "/bank_account/withdraw", WithdrawController, :create
   end
 
   scope "/", BankingApiWeb do

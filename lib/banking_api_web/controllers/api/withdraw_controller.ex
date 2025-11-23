@@ -5,10 +5,8 @@ defmodule BankingApiWeb.Api.WithdrawController do
 
   action_fallback BankingApiWeb.FallbackController
 
-  def create(conn, %{"account_number" => account_number} = params) do
-    bank_account = BankAccounts.get_by!(account_number: account_number)
-
-    case BankAccounts.withdraw(bank_account, params) do
+  def create(conn, params) do
+    case BankAccounts.withdraw(params) do
       {:ok, bank_account} ->
         conn
         |> put_status(201)
@@ -18,6 +16,11 @@ defmodule BankingApiWeb.Api.WithdrawController do
         conn
         |> put_status(422)
         |> json(%{"error" => "Insufficient funds"})
+
+      {:error, :account_closed} ->
+        conn
+        |> put_status(422)
+        |> json(%{"error" => "Account closed"})
 
       error ->
         error

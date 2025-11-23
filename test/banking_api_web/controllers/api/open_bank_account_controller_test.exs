@@ -8,7 +8,7 @@ defmodule BankingApiWeb.Api.OpenBankAccountControllerTest do
   describe "POST /api/bank_account/open" do
     @open_account_params %{
       "initial_balance" => 1000,
-      "account_number" => "1234567890",
+      "account_number" => "0001-01",
       "status" => "open"
     }
 
@@ -19,7 +19,7 @@ defmodule BankingApiWeb.Api.OpenBankAccountControllerTest do
       conn = post(conn, ~p"/api/bank_account/open", @open_account_params)
 
       assert %{
-               "account_number" => "1234567890",
+               "account_number" => "0001-01",
                "balance" => 1000,
                "id" => _,
                "status" => "open"
@@ -27,7 +27,7 @@ defmodule BankingApiWeb.Api.OpenBankAccountControllerTest do
     end
 
     @tag :web
-    test "error: returns when the given account already exists", %{
+    test "error: returns error when the given account already exists", %{
       conn: conn
     } do
       dispatch(%OpenBankAccount{}, account_number: "duplicated_account_number")

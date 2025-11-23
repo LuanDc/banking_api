@@ -46,15 +46,11 @@ defmodule BankingApi.BankAccounts do
     end
   end
 
-  def withdraw(bank_account, params) do
-    command =
-      WithdrawMoney.new()
-      |> WithdrawMoney.assign_id(bank_account.id)
-      |> WithdrawMoney.assign_account_number(params["account_number"])
-      |> WithdrawMoney.assign_amount(params["amount"])
+  def withdraw(params) do
+    command = WithdrawMoney.new(params)
 
     with :ok <- BankingApiApp.dispatch(command, consistency: :strong) do
-      get(bank_account.id)
+      get_by(account_number: params["account_number"])
     end
   end
 
