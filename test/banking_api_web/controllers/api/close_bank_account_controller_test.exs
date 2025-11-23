@@ -7,6 +7,7 @@ defmodule BankingApiWeb.Api.CloseBankAccountControllerTest do
 
   describe "POST /api/bank_account/close" do
     @close_attrs %{"account_number" => "0001-01"}
+    @invalid_attrs %{"account_number" => nil}
 
     @tag :web
     test "success: closes a bank account, returns account record", %{conn: conn} do
@@ -18,6 +19,15 @@ defmodule BankingApiWeb.Api.CloseBankAccountControllerTest do
 
       assert response["account_number"] == @close_attrs["account_number"]
       assert response["status"] == "closed"
+    end
+
+    @tag :web
+    test "error: does not closes account, returns when the given attributes are invalid", %{
+      conn: conn
+    } do
+      conn = post(conn, ~p"/api/bank_account/open", @invalid_attrs)
+
+      assert json_response(conn, 400)["error"] != %{}
     end
 
     @tag :web

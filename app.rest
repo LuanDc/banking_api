@@ -1,4 +1,4 @@
-//Send Request
+###
 GET http://localhost:4000/api/bank_account/A123456
 
 ###
@@ -8,5 +8,35 @@ content-type: application/json
 
 {
     "account_number": "A123456",
-    "initial_balance": 0
+    "initial_balance": 0,
+    "status": "open"
+}
+
+###
+
+POST http://localhost:4000/api/bank_account/close
+content-type: application/json
+
+{
+    "account_number": "A123456"
+}
+
+###
+
+POST http://localhost:4000/api/bank_account/deposit
+content-type: application/json
+
+{
+    "account_number": "A123456",
+    "amount": 200
+}
+
+###
+
+POST http://localhost:4000/api/bank_account/withdraw
+content-type: application/json
+
+{
+    "account_number": "A123456",
+    "amount": 100
 }

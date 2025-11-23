@@ -66,8 +66,8 @@ defmodule BankingApi.BankAccounts do
   end
 
   defp dispatched_successfully?(:ok), do: true
-  defp dispatched_successfully?({:error, _}), do: false
+  defp dispatched_successfully?(_), do: false
 
   defp is_account_closed?({:error, :account_closed}), do: true
-  defp is_account_closed?({:error, _}), do: false
+  defp is_account_closed?(_), do: false
 end

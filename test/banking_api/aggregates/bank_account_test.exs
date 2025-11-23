@@ -11,7 +11,7 @@ defmodule BankingApi.Aggregates.BankAccountTest do
 
   describe "OpenBankAccount" do
     @tag :unit
-    test "make sure any event of BankAccountCreated type is published" do
+    test "success: make sure any event of BankAccountCreated type is published" do
       command = build_command(%OpenBankAccount{})
       assert :ok = BankingApiApp.dispatch(command)
 
@@ -26,7 +26,7 @@ defmodule BankingApi.Aggregates.BankAccountTest do
     end
 
     @tag :unit
-    test "make sure any event of MoneyDeposit type is published" do
+    test "success: make sure any event of MoneyDeposit type is published" do
       command = build_command(%OpenBankAccount{})
       assert :ok = BankingApiApp.dispatch(command)
 
