@@ -7,6 +7,8 @@ defmodule BankingApi.BankAccounts do
   alias BankingApi.BankAccounts.Projections.BankAccount
   alias BankingApi.Repo
 
+  # Reader functions
+
   def get(id) when is_bitstring(id) do
     case Repo.get(BankAccount, id) do
       nil -> {:error, :not_found}
@@ -24,6 +26,8 @@ defmodule BankingApi.BankAccounts do
   def get_by!(filters) when is_list(filters) do
     Repo.get_by!(BankAccount, filters)
   end
+
+  # Writer functions
 
   def open_bank_account(params) do
     id = Ecto.UUID.generate()

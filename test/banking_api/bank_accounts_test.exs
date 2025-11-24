@@ -16,7 +16,7 @@ defmodule BankingApi.BankAccountsTest do
     @invalid_attrs %{"account_number" => nil}
 
     @tag :integration
-    test "success: returns opened account record when account is opened successfully" do
+    test "success: open bank account, when the given attrs are valids" do
       assert BankAccounts.open_bank_account(@valid_attrs) == :ok
     end
 
@@ -80,7 +80,7 @@ defmodule BankingApi.BankAccountsTest do
     @invalid_attrs %{"account_number" => nil}
 
     @tag :integration
-    test "success: closes a bank account, returns account record" do
+    test "success: closes a bank account" do
       dispatch(%OpenBankAccount{}, account_number: @valid_attrs["account_number"])
 
       assert BankAccounts.close_bank_account(@valid_attrs) == :ok
@@ -91,6 +91,43 @@ defmodule BankingApi.BankAccountsTest do
       dispatch(%OpenBankAccount{}, account_number: @valid_attrs["account_number"])
 
       assert BankAccounts.close_bank_account(@valid_attrs) == :ok
+    end
+
+    @tag :integration
+    test "error: returns error with reason, when account is not found" do
+      response = BankAccounts.close_bank_account(@valid_attrs)
+
+      assert response == {:error, :not_found}
+    end
+
+    @tag :integration
+    test "error: returns error with reason, when required params aren't given" do
+      assert {:error, :validation_failure, reason} =
+               BankAccounts.close_bank_account(@invalid_attrs)
+
+      assert reason == %{account_number: ["can't be empty"]}
+    end
+
+    @tag :integration
+    test "error: returns error, when the given account number is not a string" do
+      invalid_attrs = %{@valid_attrs | "account_number" => 123_456}
+
+      assert {:error, :validation_failure, reason} =
+               BankAccounts.close_bank_account(invalid_attrs)
+
+      assert reason == %{account_number: ["is not a valid string"]}
+    end
+  end
+
+  describe "deposit/1" do
+    @valid_attrs %{"account_number" => "0001-01", "amount" => 50}
+    @invalid_attrs %{"account_number" => nil}
+
+    @tag :integration
+    test "success: deposit the given amount of money into bank account" do
+      dispatch(%OpenBankAccount{}, account_number: @valid_attrs["account_number"])
+
+      assert BankAccounts.deposit(@valid_attrs) == :ok
     end
 
     @tag :integration
