@@ -110,7 +110,7 @@ defmodule BankingApi.BankAccounts.Aggregates.BankAccount do
 
   @impl Aggregate
   def apply(%BankAccount{} = account, %BankAccountOpened{} = event) do
-    %BankAccountOpened{id: id, account_number: account_number, balance: balance, status: status} =
+    %BankAccountOpened{id: id, account_number: account_number, status: status} =
       event
 
     %BankAccount{
@@ -118,7 +118,7 @@ defmodule BankingApi.BankAccounts.Aggregates.BankAccount do
       | id: id,
         account_number: account_number,
         status: status,
-        balance: balance
+        balance: 0
     }
   end
 
@@ -143,7 +143,6 @@ defmodule BankingApi.BankAccounts.Aggregates.BankAccount do
     %BankAccountOpened{
       id: id,
       account_number: account_number,
-      balance: 0,
       status: :open
     }
   end

@@ -19,7 +19,6 @@ defmodule BankingApi.Aggregates.BankAccountTest do
         assert event == %BankAccountOpened{
                  account_number: command.account_number,
                  id: command.id,
-                 balance: 0,
                  status: "open"
                }
       end)
