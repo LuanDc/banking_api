@@ -58,7 +58,7 @@ defmodule BankingApi.BankAccounts.Aggregates.BankAccount do
           amount: amount
         }
       ) do
-    %MoneyDeposited{account_number: account_number, amount: amount}
+    money_deposited(account_number, amount)
   end
 
   # Withdraw Money

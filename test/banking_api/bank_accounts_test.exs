@@ -3,6 +3,8 @@ defmodule BankingApi.BankAccountsTest do
 
   alias BankingApi.BankAccounts
   alias BankingApi.BankAccounts.Commands.OpenBankAccount
+  alias BankingApi.BankAccounts.Projections.BankAccount
+  alias BankingApi.Repo
 
   import BankingApi.CommandsFactory
 
@@ -21,11 +23,15 @@ defmodule BankingApi.BankAccountsTest do
     end
 
     @tag :integration
-    test "success: returns ok when the given is status is open or closed" do
-      for status <- ["open", "closed"] do
-        params = %{@valid_attrs | "status" => status, "account_number" => "ACC-#{status}"}
-        assert BankAccounts.open_bank_account(params) == :ok
-      end
+    test "success: ensures correct read model record update" do
+      assert BankAccounts.open_bank_account(@valid_attrs) == :ok
+
+      assert %BankAccount{
+               id: _,
+               status: :open,
+               balance: 1000,
+               account_number: "0001-01"
+             } = Repo.get_by(BankAccount, account_number: @valid_attrs["account_number"])
     end
 
     @tag :integration
@@ -63,16 +69,6 @@ defmodule BankingApi.BankAccountsTest do
       assert {:error, :validation_failure, reason} = BankAccounts.open_bank_account(params)
       assert reason == %{status: ["must be one of [\"open\", \"closed\"]"]}
     end
-
-    @tag :integration
-    test "error: returns error when account already opened" do
-      dispatch(%OpenBankAccount{},
-        account_number: "duplicated_account_number"
-      )
-
-      params = %{@valid_attrs | "account_number" => "duplicated_account_number"}
-      assert BankAccounts.open_bank_account(params) == {:error, :account_already_opened}
-    end
   end
 
   describe "close_bank_account/1" do
@@ -91,6 +87,16 @@ defmodule BankingApi.BankAccountsTest do
       dispatch(%OpenBankAccount{}, account_number: @valid_attrs["account_number"])
 
       assert BankAccounts.close_bank_account(@valid_attrs) == :ok
+    end
+
+    @tag :integration
+    test "success: ensures correct read model record update" do
+      dispatch(%OpenBankAccount{}, account_number: @valid_attrs["account_number"])
+
+      assert BankAccounts.close_bank_account(@valid_attrs) == :ok
+
+      assert %BankAccount{status: :closed} =
+               Repo.get_by(BankAccount, account_number: @valid_attrs["account_number"])
     end
 
     @tag :integration
@@ -128,6 +134,16 @@ defmodule BankingApi.BankAccountsTest do
       dispatch(%OpenBankAccount{}, account_number: @valid_attrs["account_number"])
 
       assert BankAccounts.deposit(@valid_attrs) == :ok
+    end
+
+    @tag :integration
+    test "success: ensures correct read model record update" do
+      dispatch(%OpenBankAccount{}, account_number: @valid_attrs["account_number"])
+
+      assert BankAccounts.deposit(@valid_attrs) == :ok
+
+      assert %BankAccount{balance: 50} =
+               Repo.get_by(BankAccount, account_number: @valid_attrs["account_number"])
     end
 
     @tag :integration

@@ -37,5 +37,16 @@ defmodule BankingApi.Aggregates.BankAccountTest do
                }
       end)
     end
+
+    @tag :integration
+    test "error: returns error when account already opened" do
+      dispatch(%OpenBankAccount{},
+        account_number: "duplicated_account_number"
+      )
+
+      command = build_command(%OpenBankAccount{}, account_number: "duplicated_account_number")
+
+      assert BankingApiApp.dispatch(command) == {:error, :account_already_opened}
+    end
   end
 end
