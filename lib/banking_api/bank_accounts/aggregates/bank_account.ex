@@ -28,8 +28,8 @@ defmodule BankingApi.BankAccounts.Aggregates.BankAccount do
     bank_account
     |> Multi.new()
     |> Multi.execute(fn _ -> bank_account_opened(id, account_number) end)
-    |> Multi.execute(fn bank_account ->
-      money_deposited(bank_account, account_number, initial_balance)
+    |> Multi.execute(fn _ ->
+      money_deposited(account_number, initial_balance)
     end)
   end
 
@@ -52,37 +52,26 @@ defmodule BankingApi.BankAccounts.Aggregates.BankAccount do
 
   @impl Aggregate
   def execute(
-        %BankAccount{balance: balance, status: :open},
+        %BankAccount{status: :open},
         %DepositMoney{
           account_number: account_number,
           amount: amount
         }
-      )
-      when amount > 0 do
-    %MoneyDeposited{account_number: account_number, amount: amount, balance: balance + amount}
-  end
-
-  @impl Aggregate
-  def execute(
-        %BankAccount{status: :open},
-        %DepositMoney{amount: amount}
-      )
-      when amount <= 0 do
-    {:error, :invalid_deposit_amount}
+      ) do
+    %MoneyDeposited{account_number: account_number, amount: amount}
   end
 
   # Withdraw Money
 
   @impl Aggregate
   def execute(
-        %BankAccount{status: :open, balance: balance},
+        %BankAccount{status: :open},
         %WithdrawMoney{
           account_number: account_number,
           amount: amount
         }
-      )
-      when amount > 0 and amount <= balance do
-    %MoneyWithdrawn{account_number: account_number, amount: amount, balance: balance - amount}
+      ) do
+    %MoneyWithdrawn{account_number: account_number, amount: amount}
   end
 
   @impl Aggregate
@@ -133,14 +122,14 @@ defmodule BankingApi.BankAccounts.Aggregates.BankAccount do
     }
   end
 
-  def apply(%BankAccount{} = account, %MoneyDeposited{} = event) do
-    %MoneyDeposited{balance: balance} = event
-    %BankAccount{account | balance: balance}
+  def apply(%BankAccount{balance: balance} = account, %MoneyDeposited{} = event) do
+    %MoneyDeposited{amount: amount} = event
+    %BankAccount{account | balance: balance + amount}
   end
 
-  def apply(%BankAccount{} = account, %MoneyWithdrawn{} = event) do
-    %MoneyWithdrawn{balance: balance} = event
-    %BankAccount{account | balance: balance}
+  def apply(%BankAccount{balance: balance} = account, %MoneyWithdrawn{} = event) do
+    %MoneyWithdrawn{amount: amount} = event
+    %BankAccount{account | balance: balance - amount}
   end
 
   @impl Aggregate
@@ -152,17 +141,17 @@ defmodule BankingApi.BankAccounts.Aggregates.BankAccount do
 
   defp bank_account_opened(id, account_number) do
     %BankAccountOpened{
-      account_number: account_number,
       id: id,
+      account_number: account_number,
       balance: 0,
       status: :open
     }
   end
 
-  defp money_deposited(bank_account, account_number, amount) do
+  defp money_deposited(account_number, amount) do
     %MoneyDeposited{
       account_number: account_number,
-      balance: bank_account.balance + amount
+      amount: amount
     }
   end
 end

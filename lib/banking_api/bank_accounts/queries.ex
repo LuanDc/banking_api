@@ -19,6 +19,6 @@ defmodule BankingApi.BankAccounts.Queries do
   end
 
   def update_bank_account(multi, query, changes \\ []) do
-    Ecto.Multi.update_all(multi, :bank_account, query, set: changes)
+    Ecto.Multi.update_all(multi, :bank_account, query, changes)
   end
 end

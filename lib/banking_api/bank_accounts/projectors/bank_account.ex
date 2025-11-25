@@ -36,21 +36,21 @@ defmodule BankingApi.BankAccounts.Projectors.BankAccount do
   )
 
   project(
-    %MoneyDeposited{account_number: account_number, balance: balance},
+    %MoneyDeposited{account_number: account_number, amount: amount},
     _metadata,
     fn multi ->
       update_bank_account(multi, bank_account_query(account_number: account_number),
-        balance: balance
+        inc: [balance: amount]
       )
     end
   )
 
   project(
-    %MoneyWithdrawn{account_number: account_number, balance: balance},
+    %MoneyWithdrawn{account_number: account_number, amount: amount},
     _metadata,
     fn multi ->
       update_bank_account(multi, bank_account_query(account_number: account_number),
-        balance: balance
+        inc: [balance: -amount]
       )
     end
   )
@@ -60,7 +60,7 @@ defmodule BankingApi.BankAccounts.Projectors.BankAccount do
     _metadata,
     fn multi ->
       update_bank_account(multi, bank_account_query(account_number: account_number),
-        status: status
+        set: [status: status]
       )
     end
   )
