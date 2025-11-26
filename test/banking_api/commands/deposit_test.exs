@@ -1,8 +1,8 @@
 defmodule BankingApi.BankAccounts.Commands.DepositMoneyTest do
   use ExUnit.Case, async: true
 
-  alias BankingApi.Support.Middleware.Validate
-  alias Commanded.Middleware.Pipeline
+  import BankingApi.CommandValidator, only: [validate: 1]
+
   alias BankingApi.BankAccounts.Commands.DepositMoney
 
   @tag :unit
@@ -11,8 +11,7 @@ defmodule BankingApi.BankAccounts.Commands.DepositMoneyTest do
 
     command = DepositMoney.new(attrs)
 
-    pipeline = %Pipeline{command: command}
-    result = Validate.before_dispatch(pipeline)
+    result = validate(command)
 
     refute result.halted
     assert result.response == nil
@@ -22,9 +21,8 @@ defmodule BankingApi.BankAccounts.Commands.DepositMoneyTest do
   test "error: halts pipeline and returns validation errors for command with missing fields" do
     empty_attrs = %{}
     command = DepositMoney.new(empty_attrs)
-    pipeline = %Pipeline{command: command}
 
-    result = Validate.before_dispatch(pipeline)
+    result = validate(command)
 
     assert {:error, :validation_failure, errors} = result.response
 
@@ -38,9 +36,8 @@ defmodule BankingApi.BankAccounts.Commands.DepositMoneyTest do
   test "error: halts pipeline and returns validation errors for command with invalid account number type" do
     invalid_params = %{"account_number" => 1}
     command = DepositMoney.new(invalid_params)
-    pipeline = %Pipeline{command: command}
 
-    result = Validate.before_dispatch(pipeline)
+    result = validate(command)
 
     assert {:error, :validation_failure, errors} = result.response
     assert errors[:account_number] == ["is not a valid string"]
