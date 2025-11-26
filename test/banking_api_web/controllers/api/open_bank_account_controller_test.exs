@@ -1,10 +1,6 @@
 defmodule BankingApiWeb.Api.OpenBankAccountControllerTest do
   use BankingApiWeb.ConnCase
 
-  import BankingApi.CommandsFactory
-
-  alias BankingApi.BankAccounts.Commands.OpenBankAccount
-
   describe "POST /api/bank_account/open" do
     @open_account_params %{
       "initial_balance" => 1000,
@@ -24,11 +20,12 @@ defmodule BankingApiWeb.Api.OpenBankAccountControllerTest do
     test "error: returns error, when the given account already exists", %{
       conn: conn
     } do
-      dispatch(%OpenBankAccount{}, account_number: "duplicated_account_number")
-
       params = Map.merge(@open_account_params, %{"account_number" => "duplicated_account_number"})
 
-      conn = post(conn, ~p"/api/bank_account/open", params)
+      conn =
+        1..2
+        |> Enum.map(fn _ -> post(conn, ~p"/api/bank_account/open", params) end)
+        |> Enum.fetch!(1)
 
       assert json_response(conn, 422) == %{"error" => "Account already opened"}
     end

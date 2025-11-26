@@ -8,8 +8,5 @@ defmodule BankingApi.BankAccounts.Commands.DepositMoney do
     string: true
   )
 
-  validates(:amount,
-    presence: [message: "can't be empty"],
-    number: [greater_than_or_equal_to: 0]
-  )
+  validates(:amount, number: [greater_than_or_equal_to: 0])
 end

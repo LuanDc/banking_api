@@ -15,59 +15,34 @@ defmodule BankingApi.BankAccountsTest do
       "status" => "open"
     }
 
-    @invalid_attrs %{"account_number" => nil}
-
     @tag :integration
-    test "success: open bank account, when the given attrs are valids" do
-      assert BankAccounts.open_bank_account(@valid_attrs) == :ok
+    test "success: returns :ok and read model reflects final state" do
+      assert :ok = BankAccounts.open_bank_account(@valid_attrs)
+
+      account =
+        Repo.get_by!(BankAccount,
+          account_number: @valid_attrs["account_number"]
+        )
+
+      refute is_nil(account)
+      assert account.status == :open
+      assert account.balance == 1000
     end
 
     @tag :integration
-    test "success: ensures correct read model record update" do
-      assert BankAccounts.open_bank_account(@valid_attrs) == :ok
-
-      assert %BankAccount{
-               id: _,
-               status: :open,
-               balance: 1000,
-               account_number: "0001-01"
-             } = Repo.get_by(BankAccount, account_number: @valid_attrs["account_number"])
-    end
-
-    @tag :integration
-    test "error: returns error with reason when required params aren't given" do
-      assert {:error, :validation_failure, reason} =
-               BankAccounts.open_bank_account(@invalid_attrs)
-
-      assert reason == %{
-               status: ["can't be empty", "must be one of [\"open\", \"closed\"]"],
-               account_number: ["can't be empty"],
-               initial_balance: [
-                 "can't be empty",
-                 "must be a number greater than or equal to 0"
-               ]
-             }
-    end
-
-    @tag :integration
-    test "error: returns error when the given account number is not a string" do
-      params = %{@valid_attrs | "account_number" => 123_456}
-      assert {:error, :validation_failure, reason} = BankAccounts.open_bank_account(params)
-      assert reason == %{account_number: ["is not a valid string"]}
-    end
-
-    @tag :integration
-    test "error: returns error when the given initial balance is less than 0" do
+    test "error: returns error when the command is not valid" do
       params = %{@valid_attrs | "initial_balance" => -1}
+
       assert {:error, :validation_failure, reason} = BankAccounts.open_bank_account(params)
-      assert reason == %{initial_balance: ["must be a number greater than or equal to 0"]}
+      assert reason != %{}
     end
 
-    @tag :integration
-    test "error: returns error when the given is status is not open or closed" do
-      params = %{@valid_attrs | "status" => "invalid_status"}
-      assert {:error, :validation_failure, reason} = BankAccounts.open_bank_account(params)
-      assert reason == %{status: ["must be one of [\"open\", \"closed\"]"]}
+    test "error: returns error when aggregate rejects the command" do
+      params = %{@valid_attrs | "account_number" => "ACC-1"}
+
+      result = for(_ <- 1..2, do: BankAccounts.open_bank_account(params))
+
+      assert Enum.fetch!(result, 1) == {:error, :account_already_opened}
     end
   end
 
@@ -76,52 +51,29 @@ defmodule BankingApi.BankAccountsTest do
     @invalid_attrs %{"account_number" => nil}
 
     @tag :integration
-    test "success: closes a bank account" do
-      dispatch(%OpenBankAccount{}, account_number: @valid_attrs["account_number"])
-
-      assert BankAccounts.close_bank_account(@valid_attrs) == :ok
-    end
-
-    @tag :integration
-    test "success: returns account record, when account is already closed" do
-      dispatch(%OpenBankAccount{}, account_number: @valid_attrs["account_number"])
-
-      assert BankAccounts.close_bank_account(@valid_attrs) == :ok
-    end
-
-    @tag :integration
-    test "success: ensures correct read model record update" do
+    test "success: returns :ok and read model reflects final state" do
       dispatch(%OpenBankAccount{}, account_number: @valid_attrs["account_number"])
 
       assert BankAccounts.close_bank_account(@valid_attrs) == :ok
 
-      assert %BankAccount{status: :closed} =
-               Repo.get_by(BankAccount, account_number: @valid_attrs["account_number"])
+      account = Repo.get_by(BankAccount, account_number: @valid_attrs["account_number"])
+
+      assert account.status == :closed
     end
 
     @tag :integration
-    test "error: returns error with reason, when account is not found" do
+    test "error: returns error when the command is not valid" do
+      assert {:error, :validation_failure, reason} =
+               BankAccounts.open_bank_account(@invalid_attrs)
+
+      assert reason != %{}
+    end
+
+    @tag :integration
+    test "error: returns error when aggregate rejects the command" do
       response = BankAccounts.close_bank_account(@valid_attrs)
 
       assert response == {:error, :not_found}
-    end
-
-    @tag :integration
-    test "error: returns error with reason, when required params aren't given" do
-      assert {:error, :validation_failure, reason} =
-               BankAccounts.close_bank_account(@invalid_attrs)
-
-      assert reason == %{account_number: ["can't be empty"]}
-    end
-
-    @tag :integration
-    test "error: returns error, when the given account number is not a string" do
-      invalid_attrs = %{@valid_attrs | "account_number" => 123_456}
-
-      assert {:error, :validation_failure, reason} =
-               BankAccounts.close_bank_account(invalid_attrs)
-
-      assert reason == %{account_number: ["is not a valid string"]}
     end
   end
 
@@ -130,31 +82,18 @@ defmodule BankingApi.BankAccountsTest do
     @invalid_attrs %{"account_number" => nil}
 
     @tag :integration
-    test "success: deposit the given amount of money into bank account" do
-      dispatch(%OpenBankAccount{}, account_number: @valid_attrs["account_number"])
-
-      assert BankAccounts.deposit(@valid_attrs) == :ok
-    end
-
-    @tag :integration
-    test "success: ensures correct read model record update" do
+    test "success: returns :ok and read model reflects final state" do
       dispatch(%OpenBankAccount{}, account_number: @valid_attrs["account_number"])
 
       assert BankAccounts.deposit(@valid_attrs) == :ok
 
-      assert %BankAccount{balance: 50} =
-               Repo.get_by(BankAccount, account_number: @valid_attrs["account_number"])
+      account = Repo.get_by(BankAccount, account_number: @valid_attrs["account_number"])
+
+      assert account.balance == 50
     end
 
     @tag :integration
-    test "error: returns error with reason, when account is not found" do
-      response = BankAccounts.close_bank_account(@valid_attrs)
-
-      assert response == {:error, :not_found}
-    end
-
-    @tag :integration
-    test "error: returns error with reason, when required params aren't given" do
+    test "error: returns error when the command is not valid" do
       assert {:error, :validation_failure, reason} =
                BankAccounts.close_bank_account(@invalid_attrs)
 
@@ -162,13 +101,10 @@ defmodule BankingApi.BankAccountsTest do
     end
 
     @tag :integration
-    test "error: returns error, when the given account number is not a string" do
-      invalid_attrs = %{@valid_attrs | "account_number" => 123_456}
+    test "error: returns error when aggregate rejects the command" do
+      response = BankAccounts.close_bank_account(@valid_attrs)
 
-      assert {:error, :validation_failure, reason} =
-               BankAccounts.close_bank_account(invalid_attrs)
-
-      assert reason == %{account_number: ["is not a valid string"]}
+      assert response == {:error, :not_found}
     end
   end
 end

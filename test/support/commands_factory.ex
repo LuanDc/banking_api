@@ -17,7 +17,7 @@ defmodule BankingApi.CommandsFactory do
 
     struct(
       %OpenBankAccount{
-        id: Ecto.UUID.generate(),
+        id: "1f430bb5-81fc-4de3-8c8f-e3fc00adf896",
         account_number: "ACC-123456",
         initial_balance: 0,
         status: "open"

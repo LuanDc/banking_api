@@ -13,7 +13,7 @@ defmodule BankingApi.Aggregates.BankAccountTest do
     @tag :unit
     test "success: make sure any event of BankAccountCreated type is published" do
       command = build_command(%OpenBankAccount{})
-      assert :ok = BankingApiApp.dispatch(command)
+      assert BankingApiApp.dispatch(command) == :ok
 
       wait_for_event(BankingApiApp, BankAccountOpened, fn event ->
         assert event == %BankAccountOpened{
@@ -27,7 +27,7 @@ defmodule BankingApi.Aggregates.BankAccountTest do
     @tag :unit
     test "success: make sure any event of MoneyDeposit type is published" do
       command = build_command(%OpenBankAccount{})
-      assert :ok = BankingApiApp.dispatch(command)
+      assert BankingApiApp.dispatch(command) == :ok
 
       wait_for_event(BankingApiApp, MoneyDeposited, fn event ->
         assert event == %MoneyDeposited{
@@ -39,13 +39,9 @@ defmodule BankingApi.Aggregates.BankAccountTest do
 
     @tag :integration
     test "error: returns error when account already opened" do
-      dispatch(%OpenBankAccount{},
-        account_number: "duplicated_account_number"
-      )
-
-      command = build_command(%OpenBankAccount{}, account_number: "duplicated_account_number")
-
-      assert BankingApiApp.dispatch(command) == {:error, :account_already_opened}
+      command = build_command(%OpenBankAccount{})
+      result = for(_ <- 1..2, do: BankingApiApp.dispatch(command))
+      assert Enum.fetch!(result, 1) == {:error, :account_already_opened}
     end
   end
 end
