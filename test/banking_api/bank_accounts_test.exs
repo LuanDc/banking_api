@@ -3,6 +3,7 @@ defmodule BankingApi.BankAccountsTest do
 
   alias BankingApi.BankAccounts
   alias BankingApi.BankAccounts.Commands.OpenBankAccount
+  alias BankingApi.BankAccounts.Commands.DepositMoney
   alias BankingApi.BankAccounts.Projections.BankAccount
   alias BankingApi.Repo
 
@@ -17,7 +18,7 @@ defmodule BankingApi.BankAccountsTest do
 
     @tag :integration
     test "success: returns :ok and read model reflects final state" do
-      assert :ok = BankAccounts.open_bank_account(@valid_attrs)
+      assert BankAccounts.open_bank_account(@valid_attrs) == :ok
 
       account =
         Repo.get_by!(BankAccount,
@@ -31,14 +32,15 @@ defmodule BankingApi.BankAccountsTest do
 
     @tag :integration
     test "error: returns error when the command is not valid" do
-      params = %{@valid_attrs | "initial_balance" => -1}
+      params = Map.put(@valid_attrs, "initial_balance", -1)
 
       assert {:error, :validation_failure, reason} = BankAccounts.open_bank_account(params)
+
       assert reason != %{}
     end
 
     test "error: returns error when aggregate rejects the command" do
-      params = %{@valid_attrs | "account_number" => "ACC-1"}
+      params = Map.put(@valid_attrs, "account_number", "ACC-1")
 
       result = for(_ <- 1..2, do: BankAccounts.open_bank_account(params))
 
@@ -79,7 +81,7 @@ defmodule BankingApi.BankAccountsTest do
 
   describe "deposit/1" do
     @valid_attrs %{"account_number" => "0001-01", "amount" => 50}
-    @invalid_attrs %{"account_number" => nil}
+    @invalid_attrs %{"account_number" => nil, "amount" => 0}
 
     @tag :integration
     test "success: returns :ok and read model reflects final state" do
@@ -95,14 +97,46 @@ defmodule BankingApi.BankAccountsTest do
     @tag :integration
     test "error: returns error when the command is not valid" do
       assert {:error, :validation_failure, reason} =
-               BankAccounts.close_bank_account(@invalid_attrs)
+               BankAccounts.deposit(@invalid_attrs)
 
       assert reason == %{account_number: ["can't be empty"]}
     end
 
     @tag :integration
     test "error: returns error when aggregate rejects the command" do
-      response = BankAccounts.close_bank_account(@valid_attrs)
+      response = BankAccounts.deposit(@valid_attrs)
+
+      assert response == {:error, :not_found}
+    end
+  end
+
+  describe "withdraw/1" do
+    @valid_attrs %{"account_number" => "0001-01", "amount" => 50}
+    @invalid_attrs %{"account_number" => nil, "amount" => 50}
+
+    @tag :integration
+    test "success: returns :ok and read model reflects final state" do
+      dispatch(%OpenBankAccount{}, account_number: @valid_attrs["account_number"])
+      dispatch(%DepositMoney{}, account_number: @valid_attrs["account_number"])
+
+      assert BankAccounts.withdraw(@valid_attrs) == :ok
+
+      account = Repo.get_by(BankAccount, account_number: @valid_attrs["account_number"])
+
+      assert account.balance == 0
+    end
+
+    @tag :integration
+    test "error: returns error when the command is not valid" do
+      assert {:error, :validation_failure, reason} =
+               BankAccounts.withdraw(@invalid_attrs)
+
+      assert reason == %{account_number: ["can't be empty"]}
+    end
+
+    @tag :integration
+    test "error: returns error when aggregate rejects the command" do
+      response = BankAccounts.withdraw(@valid_attrs)
 
       assert response == {:error, :not_found}
     end
