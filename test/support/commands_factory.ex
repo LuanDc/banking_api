@@ -1,8 +1,12 @@
 defmodule BankingApi.CommandsFactory do
   alias BankingApi.BankingApiApp
-  alias BankingApi.BankAccounts.Commands.OpenBankAccount
-  alias BankingApi.BankAccounts.Commands.CloseBankAccount
-  alias BankingApi.BankAccounts.Commands.DepositMoney
+
+  alias BankingApi.BankAccounts.Commands.{
+    OpenBankAccount,
+    DepositMoney,
+    WithdrawMoney,
+    CloseBankAccount
+  }
 
   def dispatch(command, attrs \\ [])
       when is_struct(command) and is_list(attrs) do
@@ -11,29 +15,42 @@ defmodule BankingApi.CommandsFactory do
     command
   end
 
-  def build_command(command, attrs \\ [])
+  def build_command(command, opts \\ [])
 
-  def build_command(%OpenBankAccount{}, attrs) do
-    attrs = Enum.into(attrs, %{})
-
-    struct(
-      %OpenBankAccount{
-        id: "1f430bb5-81fc-4de3-8c8f-e3fc00adf896",
-        account_number: "ACC-123456",
-        initial_balance: 0,
-        status: "open"
-      },
-      attrs
-    )
+  def build_command(%OpenBankAccount{}, opts) do
+    %OpenBankAccount{
+      id: Keyword.get(opts, :id, Ecto.UUID.generate()),
+      account_number: Keyword.get(opts, :account_number, generate_account_number()),
+      initial_balance: Keyword.get(opts, :initial_balance, 0),
+      status: Keyword.get(opts, :status, "open")
+    }
+    |> Map.merge(Map.new(opts))
   end
 
-  def build_command(%CloseBankAccount{}, attrs) do
-    attrs = Enum.into(attrs, %{})
-    struct(%CloseBankAccount{account_number: "ACC-123456"}, attrs)
+  def build_command(%DepositMoney{}, opts) do
+    %DepositMoney{
+      account_number: Keyword.get(opts, :account_number, generate_account_number()),
+      amount: Keyword.get(opts, :amount, 100)
+    }
+    |> Map.merge(Map.new(opts))
   end
 
-  def build_command(%DepositMoney{}, attrs) do
-    attrs = Enum.into(attrs, %{})
-    struct(%DepositMoney{account_number: "ACC-123456", amount: 50}, attrs)
+  def build_command(%WithdrawMoney{}, opts) do
+    %WithdrawMoney{
+      account_number: Keyword.get(opts, :account_number, generate_account_number()),
+      amount: Keyword.get(opts, :amount, 50)
+    }
+    |> Map.merge(Map.new(opts))
+  end
+
+  def build_command(%CloseBankAccount{}, opts) do
+    %CloseBankAccount{
+      account_number: Keyword.get(opts, :account_number, generate_account_number())
+    }
+    |> Map.merge(Map.new(opts))
+  end
+
+  defp generate_account_number do
+    "#{Enum.random(1000..9999)}-#{Enum.random(10..99)}"
   end
 end

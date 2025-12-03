@@ -123,7 +123,7 @@ defmodule BankingApi.BankAccountsTest do
 
       account = Repo.get_by(BankAccount, account_number: @valid_attrs["account_number"])
 
-      assert account.balance == 0
+      assert account.balance == 50
     end
 
     @tag :integration
