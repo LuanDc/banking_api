@@ -2,6 +2,7 @@ defmodule BankingApi.BankAccountsTest do
   use BankingApi.DataCase
 
   alias BankingApi.BankAccounts
+  alias BankingApi.BankingApiApp
   alias BankingApi.BankAccounts.Commands.OpenBankAccount
   alias BankingApi.BankAccounts.Commands.DepositMoney
   alias BankingApi.BankAccounts.Projections.BankAccount
@@ -54,7 +55,10 @@ defmodule BankingApi.BankAccountsTest do
 
     @tag :integration
     test "success: returns :ok and read model reflects final state" do
-      dispatch(%OpenBankAccount{}, account_number: @valid_attrs["account_number"])
+      open_bank_account =
+        build_command(%OpenBankAccount{}, account_number: @valid_attrs["account_number"])
+
+      BankingApiApp.dispatch([open_bank_account])
 
       assert BankAccounts.close_bank_account(@valid_attrs) == :ok
 
@@ -85,7 +89,10 @@ defmodule BankingApi.BankAccountsTest do
 
     @tag :integration
     test "success: returns :ok and read model reflects final state" do
-      dispatch(%OpenBankAccount{}, account_number: @valid_attrs["account_number"])
+      open_bank_account =
+        build_command(%OpenBankAccount{}, account_number: @valid_attrs["account_number"])
+
+      BankingApiApp.dispatch([open_bank_account])
 
       assert BankAccounts.deposit(@valid_attrs) == :ok
 
@@ -116,8 +123,13 @@ defmodule BankingApi.BankAccountsTest do
 
     @tag :integration
     test "success: returns :ok and read model reflects final state" do
-      dispatch(%OpenBankAccount{}, account_number: @valid_attrs["account_number"])
-      dispatch(%DepositMoney{}, account_number: @valid_attrs["account_number"])
+      open_bank_account =
+        build_command(%OpenBankAccount{}, account_number: @valid_attrs["account_number"])
+
+      deposit_money =
+        build_command(%DepositMoney{}, account_number: @valid_attrs["account_number"])
+
+      BankingApiApp.dispatch([open_bank_account, deposit_money])
 
       assert BankAccounts.withdraw(@valid_attrs) == :ok
 

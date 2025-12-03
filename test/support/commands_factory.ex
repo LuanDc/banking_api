@@ -1,19 +1,10 @@
 defmodule BankingApi.CommandsFactory do
-  alias BankingApi.BankingApiApp
-
   alias BankingApi.BankAccounts.Commands.{
     OpenBankAccount,
     DepositMoney,
     WithdrawMoney,
     CloseBankAccount
   }
-
-  def dispatch(command, attrs \\ [])
-      when is_struct(command) and is_list(attrs) do
-    command = build_command(command, attrs)
-    :ok = BankingApiApp.dispatch(command, consistency: :strong)
-    command
-  end
 
   def build_command(command, opts \\ [])
 

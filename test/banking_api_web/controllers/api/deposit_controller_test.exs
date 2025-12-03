@@ -1,14 +1,20 @@
 defmodule BankingApiWeb.Api.DepositControllerTest do
   use BankingApiWeb.ConnCase
 
-  alias BankingApi.BankAccounts.Commands.OpenBankAccount
+  import BankingApi.CommandsFactory
+
+  alias BankingApi.BankingApiApp
+  alias BankingApi.BankAccounts.Commands.{OpenBankAccount, CloseBankAccount}
 
   describe "POST /api/bank_account/deposit" do
     @create_attrs %{"amount" => 100, "account_number" => "0001-01"}
 
     @tag :web
     test "success: deposits money, when data is valid", %{conn: conn} do
-      dispatch(%OpenBankAccount{}, account_number: @create_attrs["account_number"])
+      open_bank_account =
+        build_command(%OpenBankAccount{}, account_number: @create_attrs["account_number"])
+
+      BankingApiApp.dispatch([open_bank_account])
 
       conn = post(conn, ~p"/api/bank_account/deposit", @create_attrs)
 
@@ -17,7 +23,10 @@ defmodule BankingApiWeb.Api.DepositControllerTest do
 
     @tag :web
     test "error: returns error, when data is invalid", %{conn: conn} do
-      dispatch(%OpenBankAccount{}, account_number: @create_attrs["account_number"])
+      open_bank_account =
+        build_command(%OpenBankAccount{}, account_number: @create_attrs["account_number"])
+
+      BankingApiApp.dispatch([open_bank_account])
 
       invalid_attrs = %{@create_attrs | "amount" => nil}
 
@@ -34,11 +43,15 @@ defmodule BankingApiWeb.Api.DepositControllerTest do
 
     @tag :web
     test "error: returns error, when account is already closed", %{conn: conn} do
-      dispatch(%OpenBankAccount{}, account_number: @create_attrs["account_number"])
+      open_bank_account =
+        build_command(%OpenBankAccount{}, account_number: @create_attrs["account_number"])
 
-      dispatch(%BankingApi.BankAccounts.Commands.CloseBankAccount{},
-        account_number: @create_attrs["account_number"]
-      )
+      close_bank_account =
+        build_command(%CloseBankAccount{},
+          account_number: @create_attrs["account_number"]
+        )
+
+      BankingApiApp.dispatch([open_bank_account, close_bank_account])
 
       conn = post(conn, ~p"/api/bank_account/deposit", @create_attrs)
       assert json_response(conn, 422) == %{"error" => "Account closed"}

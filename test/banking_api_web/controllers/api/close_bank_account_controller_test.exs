@@ -3,6 +3,7 @@ defmodule BankingApiWeb.Api.CloseBankAccountControllerTest do
 
   import BankingApi.CommandsFactory
 
+  alias BankingApi.BankingApiApp
   alias BankingApi.BankAccounts.Commands.OpenBankAccount
 
   describe "POST /api/bank_account/close" do
@@ -11,7 +12,10 @@ defmodule BankingApiWeb.Api.CloseBankAccountControllerTest do
 
     @tag :web
     test "success: closes a bank account", %{conn: conn} do
-      dispatch(%OpenBankAccount{}, account_number: @close_attrs["account_number"])
+      open_bank_account =
+        build_command(%OpenBankAccount{}, account_number: @close_attrs["account_number"])
+
+      BankingApiApp.dispatch([open_bank_account])
 
       conn = post(conn, ~p"/api/bank_account/close", @close_attrs)
 
