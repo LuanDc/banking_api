@@ -28,7 +28,7 @@ defmodule BankingApi.BankAccounts.Aggregates.BankAccount do
       id: id,
       account_number: account_number,
       initial_balance: initial_balance,
-      status: :open
+      status: "open"
     }
   end
 
@@ -40,18 +40,18 @@ defmodule BankingApi.BankAccounts.Aggregates.BankAccount do
   # Close Bank Account
 
   @impl Aggregate
-  def execute(%BankAccount{account_number: account_number, status: :open}, %CloseBankAccount{
+  def execute(%BankAccount{account_number: account_number, status: "open"}, %CloseBankAccount{
         account_number: account_number
       })
       when not is_nil(account_number) do
-    %BankAccountClosed{account_number: account_number, status: :closed}
+    %BankAccountClosed{account_number: account_number, status: "closed"}
   end
 
   # Deposit Money
 
   @impl Aggregate
   def execute(
-        %BankAccount{status: :open},
+        %BankAccount{status: "open"},
         %DepositMoney{
           account_number: account_number,
           amount: amount
@@ -64,7 +64,7 @@ defmodule BankingApi.BankAccounts.Aggregates.BankAccount do
 
   @impl Aggregate
   def execute(
-        %BankAccount{status: :open} = bank_account,
+        %BankAccount{status: "open"} = bank_account,
         %WithdrawMoney{
           account_number: account_number,
           amount: amount
@@ -76,7 +76,7 @@ defmodule BankingApi.BankAccounts.Aggregates.BankAccount do
 
   @impl Aggregate
   def execute(
-        %BankAccount{status: :open},
+        %BankAccount{status: "open"},
         %WithdrawMoney{}
       ) do
     {:error, :insufficient_funds}
@@ -85,7 +85,7 @@ defmodule BankingApi.BankAccounts.Aggregates.BankAccount do
   # General Restrictions
 
   @impl Aggregate
-  def execute(%BankAccount{status: :closed}, %command{})
+  def execute(%BankAccount{status: "closed"}, %command{})
       when command in [DepositMoney, WithdrawMoney, CloseBankAccount] do
     {:error, :account_closed}
   end
@@ -129,7 +129,7 @@ defmodule BankingApi.BankAccounts.Aggregates.BankAccount do
 
   @impl Aggregate
   def apply(%BankAccount{} = account, %BankAccountClosed{} = _event) do
-    %BankAccount{account | status: :closed}
+    %BankAccount{account | status: "closed"}
   end
 
   defp money_deposited(account_number, amount) do

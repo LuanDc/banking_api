@@ -21,7 +21,8 @@ defmodule BankingApi.BankAccounts.Projectors.BankAccount do
     %BankAccountOpened{
       id: id,
       account_number: account_number,
-      status: status
+      status: status,
+      initial_balance: initial_balance
     },
     _metadata,
     fn multi ->
@@ -29,7 +30,7 @@ defmodule BankingApi.BankAccounts.Projectors.BankAccount do
         id: id,
         account_number: account_number,
         status: String.to_existing_atom(status),
-        balance: 0
+        balance: initial_balance
       })
     end
   )

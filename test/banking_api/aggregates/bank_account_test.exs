@@ -3,6 +3,8 @@ defmodule BankingApi.Aggregates.BankAccountTest do
 
   import Commanded.Assertions.EventAssertions
 
+  alias BankingApi.BankAccounts.Aggregates.BankAccount
+
   alias BankingApi.BankingApiApp
 
   alias BankingApi.BankAccounts.Commands.{
@@ -19,6 +21,8 @@ defmodule BankingApi.Aggregates.BankAccountTest do
     MoneyWithdrawn
   }
 
+  alias Commanded.Aggregates.Aggregate
+
   describe "OpenBankAccount" do
     @tag :unit
     test "success: make sure any event of BankAccountOpened type is published" do
@@ -34,6 +38,18 @@ defmodule BankingApi.Aggregates.BankAccountTest do
                  initial_balance: 0
                }
       end)
+
+      assert Aggregate.aggregate_state(
+               BankingApiApp,
+               BankAccount,
+               "bank-account-#{open_bank_account.account_number}"
+             ) ==
+               %BankAccount{
+                 id: open_bank_account.id,
+                 account_number: open_bank_account.account_number,
+                 balance: 0,
+                 status: "open"
+               }
     end
 
     @tag :integration
@@ -63,6 +79,18 @@ defmodule BankingApi.Aggregates.BankAccountTest do
         assert event.account_number == deposit_money.account_number
         assert event.amount == deposit_money.amount
       end)
+
+      assert Aggregate.aggregate_state(
+               BankingApiApp,
+               BankAccount,
+               "bank-account-#{open_bank_account.account_number}"
+             ) ==
+               %BankAccount{
+                 id: open_bank_account.id,
+                 account_number: open_bank_account.account_number,
+                 balance: 100,
+                 status: "open"
+               }
     end
 
     @tag :unit
@@ -90,6 +118,18 @@ defmodule BankingApi.Aggregates.BankAccountTest do
         assert event.account_number == withdraw_money.account_number
         assert event.amount == 100
       end)
+
+      assert Aggregate.aggregate_state(
+               BankingApiApp,
+               BankAccount,
+               "bank-account-#{open_bank_account.account_number}"
+             ) ==
+               %BankAccount{
+                 id: open_bank_account.id,
+                 account_number: open_bank_account.account_number,
+                 balance: 100,
+                 status: "open"
+               }
     end
 
     @tag :unit
@@ -130,6 +170,18 @@ defmodule BankingApi.Aggregates.BankAccountTest do
         assert event.account_number == close_bank_account.account_number
         assert event.status == "closed"
       end)
+
+      assert Aggregate.aggregate_state(
+               BankingApiApp,
+               BankAccount,
+               "bank-account-#{open_bank_account.account_number}"
+             ) ==
+               %BankAccount{
+                 id: open_bank_account.id,
+                 account_number: open_bank_account.account_number,
+                 balance: 0,
+                 status: "closed"
+               }
     end
 
     @tag :unit
