@@ -37,15 +37,21 @@ defmodule BankingApi.BankAccounts do
       |> OpenBankAccount.new()
       |> OpenBankAccount.assign_id(id)
 
-    BankingApiApp.dispatch(command, consistency: :strong)
+    with :ok <- BankingApiApp.dispatch(command, consistency: :strong) do
+      get(id)
+    end
   end
 
   def deposit(params) do
-    BankingApiApp.dispatch(DepositMoney.new(params), consistency: :strong)
+    with :ok <- BankingApiApp.dispatch(DepositMoney.new(params), consistency: :strong) do
+      get_by(account_number: params["account_number"])
+    end
   end
 
   def withdraw(params) do
-    BankingApiApp.dispatch(WithdrawMoney.new(params), consistency: :strong)
+    with :ok <- BankingApiApp.dispatch(WithdrawMoney.new(params), consistency: :strong) do
+      get_by(account_number: params["account_number"])
+    end
   end
 
   def close_bank_account(params) do

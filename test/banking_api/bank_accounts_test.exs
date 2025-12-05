@@ -37,7 +37,7 @@ defmodule BankingApi.BankAccountsTest do
 
     @tag :integration
     test "success: returns :ok and read model reflects final state" do
-      assert :ok = BankAccounts.open_bank_account(@valid_params)
+      assert {:ok, _bank_account} = BankAccounts.open_bank_account(@valid_params)
 
       account = get_account!(@valid_params["account_number"])
 
@@ -59,7 +59,7 @@ defmodule BankingApi.BankAccountsTest do
       account_number = "ACC-001"
       params = %{@valid_params | "account_number" => account_number}
 
-      assert :ok = BankAccounts.open_bank_account(params)
+      assert {:ok, _bank_account} = BankAccounts.open_bank_account(params)
       assert {:error, :account_already_opened} = BankAccounts.open_bank_account(params)
     end
   end
@@ -103,7 +103,7 @@ defmodule BankingApi.BankAccountsTest do
     test "success: returns :ok and read model reflects final state" do
       create_account(@account_number)
 
-      assert :ok = BankAccounts.deposit(@valid_params)
+      assert {:ok, _bank_account} = BankAccounts.deposit(@valid_params)
 
       account = get_account!(@account_number)
       assert account.balance == @deposit_amount
@@ -133,7 +133,7 @@ defmodule BankingApi.BankAccountsTest do
     test "success: returns :ok and read model reflects final state" do
       create_account(@account_number, @initial_balance)
 
-      assert :ok = BankAccounts.withdraw(@valid_params)
+      assert {:ok, _bank_account} = BankAccounts.withdraw(@valid_params)
 
       account = get_account!(@account_number)
       assert account.balance == @initial_balance - @withdraw_amount

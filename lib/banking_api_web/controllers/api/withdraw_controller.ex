@@ -6,12 +6,11 @@ defmodule BankingApiWeb.Api.WithdrawController do
   action_fallback BankingApiWeb.FallbackController
 
   def create(conn, params) do
-    case BankAccounts.withdraw(params) do
-      :ok ->
-        conn
-        |> put_status(201)
-        |> text("")
-
+    with {:ok, bank_account} <- BankAccounts.withdraw(params) do
+      conn
+      |> put_status(201)
+      |> json(bank_account)
+    else
       {:error, :insufficient_funds} ->
         conn
         |> put_status(422)
