@@ -25,6 +25,18 @@ defmodule BankingApiWeb.Api.WithdrawControllerTest do
     end
 
     @tag :web
+    test "error: returns error when the account doesn't have sufficient funds", %{conn: conn} do
+      open_bank_account =
+        build_command(%OpenBankAccount{}, account_number: @create_attrs["account_number"])
+
+      BankingApiApp.dispatch([open_bank_account])
+
+      conn = post(conn, ~p"/api/bank_account/withdraw", @create_attrs)
+
+      assert json_response(conn, 422) == %{"error" => "Insufficient funds"}
+    end
+
+    @tag :web
     test "error: returns error when data is invalid", %{conn: conn} do
       open_bank_account =
         build_command(%OpenBankAccount{}, account_number: @create_attrs["account_number"])
