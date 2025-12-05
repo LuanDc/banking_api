@@ -9,7 +9,15 @@ defmodule BankingApi.MixProject do
       elixirc_paths: elixirc_paths(Mix.env()),
       start_permanent: Mix.env() == :prod,
       aliases: aliases(),
-      deps: deps()
+      deps: deps(),
+      test_coverage: [tool: ExCoveralls],
+      preferred_cli_env: [
+        coveralls: :test,
+        "coveralls.detail": :test,
+        "coveralls.post": :test,
+        "coveralls.html": :test,
+        "coveralls.cobertura": :test
+      ]
     ]
   end
 
@@ -63,7 +71,8 @@ defmodule BankingApi.MixProject do
       {:commanded_ecto_projections, "~> 1.4"},
       {:vex, "~> 0.9.2"},
       {:exconstructor, "~> 1.2.19"},
-      {:ex_machina, "~> 2.8.0", only: :test}
+      {:ex_machina, "~> 2.8.0", only: :test},
+      {:excoveralls, "~> 0.18", only: :test}
     ]
   end
 
