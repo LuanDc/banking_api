@@ -1,21 +1,13 @@
 defmodule BankingApiWeb.Api.CloseBankAccountControllerTest do
   use BankingApiWeb.ConnCase
 
-  import BankingApi.CommandsFactory
-
-  alias BankingApi.BankingApiApp
-  alias BankingApi.BankAccounts.Commands.OpenBankAccount
-
   describe "POST /api/bank_account/close" do
     @close_attrs %{"account_number" => "0001-01"}
     @invalid_attrs %{"account_number" => nil}
 
     @tag :web
     test "success: closes a bank account", %{conn: conn} do
-      open_bank_account =
-        build_command(%OpenBankAccount{}, account_number: @close_attrs["account_number"])
-
-      BankingApiApp.dispatch([open_bank_account])
+      setup_bank_account(@close_attrs["account_number"])
 
       conn = post(conn, ~p"/api/bank_account/close", @close_attrs)
 

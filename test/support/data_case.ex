@@ -27,6 +27,7 @@ defmodule BankingApi.DataCase do
       import BankingApi.DataCase
       import BankingApi.CommandsFactory
       import BankingApi.Factory
+      import BankingApi.EventStoreHelper
     end
   end
 
