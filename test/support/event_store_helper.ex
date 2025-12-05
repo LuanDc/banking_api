@@ -55,7 +55,7 @@ defmodule BankingApi.EventStoreHelper do
           id: "uuid-123",
           account_number: "123",
           initial_balance: 1000,
-          status: "open"
+          status: "active"
         }
       ])
 
@@ -88,7 +88,7 @@ defmodule BankingApi.EventStoreHelper do
     * `:id` - Account ID (default: generated UUID)
     * `:account_number` - Account number (required)
     * `:initial_balance` - Initial balance (default: 0)
-    * `:status` - Account status (default: "open")
+    * `:status` - Account status (default: "active")
 
   ## Examples
 
@@ -99,7 +99,7 @@ defmodule BankingApi.EventStoreHelper do
       id: Keyword.get(opts, :id, Ecto.UUID.generate()),
       account_number: Keyword.fetch!(opts, :account_number),
       initial_balance: Keyword.get(opts, :initial_balance, 0),
-      status: Keyword.get(opts, :status, "open")
+      status: Keyword.get(opts, :status, "active")
     }
   end
 
@@ -147,7 +147,7 @@ defmodule BankingApi.EventStoreHelper do
   ## Options
 
     * `:account_number` - Account number (required)
-    * `:status` - Account status (default: "closed")
+    * `:status` - Account status (default: "inactive")
 
   ## Examples
 
@@ -156,7 +156,7 @@ defmodule BankingApi.EventStoreHelper do
   def bank_account_closed(opts) do
     %BankAccountClosed{
       account_number: Keyword.fetch!(opts, :account_number),
-      status: Keyword.get(opts, :status, "closed")
+      status: Keyword.get(opts, :status, "inactive")
     }
   end
 

@@ -8,7 +8,7 @@ defmodule BankingApi.Factory do
       id: Ecto.UUID.generate(),
       account_number: "Jane Smith",
       balance: 0,
-      status: :open
+      status: :active
     }
   end
 end

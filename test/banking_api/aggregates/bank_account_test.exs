@@ -27,7 +27,7 @@ defmodule BankingApi.Aggregates.BankAccountTest do
         id: "550e8400-e29b-41d4-a716-446655440000",
         account_number: "ACC-001",
         initial_balance: 1000,
-        status: "open"
+        status: "active"
       }
 
       # ACT
@@ -38,7 +38,7 @@ defmodule BankingApi.Aggregates.BankAccountTest do
                id: "550e8400-e29b-41d4-a716-446655440000",
                account_number: "ACC-001",
                initial_balance: 1000,
-               status: "open"
+               status: "active"
              }
     end
 
@@ -50,7 +50,7 @@ defmodule BankingApi.Aggregates.BankAccountTest do
         id: "550e8400-e29b-41d4-a716-446655440001",
         account_number: "ACC-002",
         initial_balance: 0,
-        status: "open"
+        status: "active"
       }
 
       result = BankAccount.execute(aggregate, command)
@@ -59,7 +59,7 @@ defmodule BankingApi.Aggregates.BankAccountTest do
                id: "550e8400-e29b-41d4-a716-446655440001",
                account_number: "ACC-002",
                initial_balance: 0,
-               status: "open"
+               status: "active"
              }
     end
 
@@ -69,14 +69,14 @@ defmodule BankingApi.Aggregates.BankAccountTest do
         id: "existing-id",
         account_number: "ACC-003",
         balance: 0,
-        status: "open"
+        status: "active"
       }
 
       command = %OpenBankAccount{
         id: "new-id",
         account_number: "ACC-003",
         initial_balance: 500,
-        status: "open"
+        status: "active"
       }
 
       result = BankAccount.execute(aggregate, command)
@@ -92,7 +92,7 @@ defmodule BankingApi.Aggregates.BankAccountTest do
         id: "acc-id-001",
         account_number: "ACC-001",
         balance: 500,
-        status: "open"
+        status: "active"
       }
 
       command = %DepositMoney{
@@ -128,7 +128,7 @@ defmodule BankingApi.Aggregates.BankAccountTest do
         id: "acc-id-002",
         account_number: "ACC-002",
         balance: 1000,
-        status: "closed"
+        status: "inactive"
       }
 
       command = %DepositMoney{
@@ -149,7 +149,7 @@ defmodule BankingApi.Aggregates.BankAccountTest do
         id: "acc-id-003",
         account_number: "ACC-003",
         balance: 1000,
-        status: "open"
+        status: "active"
       }
 
       command = %WithdrawMoney{
@@ -171,7 +171,7 @@ defmodule BankingApi.Aggregates.BankAccountTest do
         id: "acc-id-004",
         account_number: "ACC-004",
         balance: 500,
-        status: "open"
+        status: "active"
       }
 
       command = %WithdrawMoney{
@@ -193,7 +193,7 @@ defmodule BankingApi.Aggregates.BankAccountTest do
         id: "acc-id-005",
         account_number: "ACC-005",
         balance: 100,
-        status: "open"
+        status: "active"
       }
 
       command = %WithdrawMoney{
@@ -226,7 +226,7 @@ defmodule BankingApi.Aggregates.BankAccountTest do
         id: "acc-id-006",
         account_number: "ACC-006",
         balance: 1000,
-        status: "closed"
+        status: "inactive"
       }
 
       command = %WithdrawMoney{
@@ -247,7 +247,7 @@ defmodule BankingApi.Aggregates.BankAccountTest do
         id: "acc-id-007",
         account_number: "ACC-007",
         balance: 0,
-        status: "open"
+        status: "active"
       }
 
       command = %CloseBankAccount{
@@ -258,7 +258,7 @@ defmodule BankingApi.Aggregates.BankAccountTest do
 
       assert result == %BankAccountClosed{
                account_number: "ACC-007",
-               status: "closed"
+               status: "inactive"
              }
     end
 
@@ -268,7 +268,7 @@ defmodule BankingApi.Aggregates.BankAccountTest do
         id: "acc-id-008",
         account_number: "ACC-008",
         balance: 1000,
-        status: "open"
+        status: "active"
       }
 
       command = %CloseBankAccount{
@@ -279,7 +279,7 @@ defmodule BankingApi.Aggregates.BankAccountTest do
 
       assert result == %BankAccountClosed{
                account_number: "ACC-008",
-               status: "closed"
+               status: "inactive"
              }
     end
 
@@ -302,7 +302,7 @@ defmodule BankingApi.Aggregates.BankAccountTest do
         id: "acc-id-009",
         account_number: "ACC-009",
         balance: 0,
-        status: "closed"
+        status: "inactive"
       }
 
       command = %CloseBankAccount{
@@ -325,7 +325,7 @@ defmodule BankingApi.Aggregates.BankAccountTest do
         id: "event-id-001",
         account_number: "ACC-010",
         initial_balance: 2000,
-        status: "open"
+        status: "active"
       }
 
       # ACT
@@ -336,7 +336,7 @@ defmodule BankingApi.Aggregates.BankAccountTest do
                id: "event-id-001",
                account_number: "ACC-010",
                balance: 2000,
-               status: "open"
+               status: "active"
              }
     end
 
@@ -346,7 +346,7 @@ defmodule BankingApi.Aggregates.BankAccountTest do
         id: "acc-id-011",
         account_number: "ACC-011",
         balance: 500,
-        status: "open"
+        status: "active"
       }
 
       event = %MoneyDeposited{
@@ -365,7 +365,7 @@ defmodule BankingApi.Aggregates.BankAccountTest do
         id: "acc-id-012",
         account_number: "ACC-012",
         balance: 1000,
-        status: "open"
+        status: "active"
       }
 
       event = %MoneyWithdrawn{
@@ -384,17 +384,17 @@ defmodule BankingApi.Aggregates.BankAccountTest do
         id: "acc-id-013",
         account_number: "ACC-013",
         balance: 100,
-        status: "open"
+        status: "active"
       }
 
       event = %BankAccountClosed{
         account_number: "ACC-013",
-        status: "closed"
+        status: "inactive"
       }
 
       result = BankAccount.apply(aggregate, event)
 
-      assert result.status == "closed"
+      assert result.status == "inactive"
       assert result.balance == 100
     end
 
@@ -410,7 +410,7 @@ defmodule BankingApi.Aggregates.BankAccountTest do
           id: "seq-id-001",
           account_number: "ACC-SEQ",
           initial_balance: 1000,
-          status: "open"
+          status: "active"
         })
         |> BankAccount.apply(%MoneyDeposited{
           account_number: "ACC-SEQ",
@@ -426,7 +426,7 @@ defmodule BankingApi.Aggregates.BankAccountTest do
                id: "seq-id-001",
                account_number: "ACC-SEQ",
                balance: 1200,
-               status: "open"
+               status: "active"
              }
     end
   end

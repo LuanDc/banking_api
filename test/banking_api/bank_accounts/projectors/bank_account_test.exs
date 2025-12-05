@@ -16,7 +16,7 @@ defmodule BankingApi.BankAccounts.Projectors.BankAccountTest do
 
       assert bank_account.account_number == account_number
       assert bank_account.balance == initial_balance
-      assert bank_account.status == :open
+      assert bank_account.status == :active
     end
 
     @tag :integration
@@ -28,7 +28,7 @@ defmodule BankingApi.BankAccounts.Projectors.BankAccountTest do
       bank_account = Repo.get_by!(BankAccount, account_number: account_number)
 
       assert bank_account.balance == 0
-      assert bank_account.status == :open
+      assert bank_account.status == :active
     end
   end
 
@@ -120,14 +120,14 @@ defmodule BankingApi.BankAccounts.Projectors.BankAccountTest do
 
   describe "BankAccountClosed projection" do
     @tag :integration
-    test "updates account status to closed" do
+    test "updates account status to inactive" do
       account_number = "ACC-PROJ-008"
 
       setup_closed_bank_account(account_number, 0)
 
       bank_account = Repo.get_by!(BankAccount, account_number: account_number)
 
-      assert bank_account.status == :closed
+      assert bank_account.status == :inactive
     end
 
     @tag :integration
@@ -140,7 +140,7 @@ defmodule BankingApi.BankAccounts.Projectors.BankAccountTest do
       bank_account = Repo.get_by!(BankAccount, account_number: account_number)
 
       assert bank_account.balance == final_balance
-      assert bank_account.status == :closed
+      assert bank_account.status == :inactive
     end
   end
 
@@ -160,7 +160,7 @@ defmodule BankingApi.BankAccounts.Projectors.BankAccountTest do
       bank_account = Repo.get_by!(BankAccount, account_number: account_number)
 
       assert bank_account.balance == 1100
-      assert bank_account.status == :open
+      assert bank_account.status == :active
     end
   end
 end

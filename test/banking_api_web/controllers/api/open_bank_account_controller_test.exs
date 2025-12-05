@@ -5,7 +5,7 @@ defmodule BankingApiWeb.Api.OpenBankAccountControllerTest do
     @open_account_params %{
       "initial_balance" => 1000,
       "account_number" => "0001-01",
-      "status" => "open"
+      "status" => "active"
     }
 
     @invalid_params %{"account_number" => nil}

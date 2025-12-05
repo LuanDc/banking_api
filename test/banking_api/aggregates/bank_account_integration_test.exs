@@ -33,7 +33,7 @@ defmodule BankingApi.Aggregates.BankAccountIntegrationTest do
         assert event == %BankAccountOpened{
                  account_number: open_bank_account.account_number,
                  id: open_bank_account.id,
-                 status: "open",
+                 status: "active",
                  initial_balance: 0
                }
       end)
@@ -47,7 +47,7 @@ defmodule BankingApi.Aggregates.BankAccountIntegrationTest do
                  id: open_bank_account.id,
                  account_number: open_bank_account.account_number,
                  balance: 0,
-                 status: "open"
+                 status: "active"
                }
     end
 
@@ -89,7 +89,7 @@ defmodule BankingApi.Aggregates.BankAccountIntegrationTest do
                  id: open_bank_account.id,
                  account_number: open_bank_account.account_number,
                  balance: 100,
-                 status: "open"
+                 status: "active"
                }
     end
 
@@ -132,7 +132,7 @@ defmodule BankingApi.Aggregates.BankAccountIntegrationTest do
                  id: open_bank_account.id,
                  account_number: open_bank_account.account_number,
                  balance: expected_balance,
-                 status: "open"
+                 status: "active"
                }
     end
 
@@ -172,7 +172,7 @@ defmodule BankingApi.Aggregates.BankAccountIntegrationTest do
 
       wait_for_event(BankingApiApp, BankAccountClosed, fn event ->
         assert event.account_number == close_bank_account.account_number
-        assert event.status == "closed"
+        assert event.status == "inactive"
       end)
 
       assert Aggregate.aggregate_state(
@@ -184,7 +184,7 @@ defmodule BankingApi.Aggregates.BankAccountIntegrationTest do
                  id: open_bank_account.id,
                  account_number: open_bank_account.account_number,
                  balance: 0,
-                 status: "closed"
+                 status: "inactive"
                }
     end
 

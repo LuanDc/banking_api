@@ -9,16 +9,17 @@ content-type: application/json
 {
     "account_number": "A123456",
     "initial_balance": 0,
-    "status": "open"
+    "status": "active"
 }
 
 ###
 
-POST http://localhost:4000/api/bank_account/close
+POST http://localhost:4000/api/bank_account/status
 content-type: application/json
 
 {
-    "account_number": "A123456"
+    "account_number": "A123456",
+    "status": "active"
 }
 
 ###
@@ -38,5 +39,5 @@ content-type: application/json
 
 {
     "account_number": "A123456",
-    "amount": 100
+    "amount": 1
 }

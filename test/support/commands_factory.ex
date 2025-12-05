@@ -3,7 +3,8 @@ defmodule BankingApi.CommandsFactory do
     OpenBankAccount,
     DepositMoney,
     WithdrawMoney,
-    CloseBankAccount
+    CloseBankAccount,
+    UpdateBankAccountStatus
   }
 
   def build_command(command, opts \\ [])
@@ -13,7 +14,7 @@ defmodule BankingApi.CommandsFactory do
       id: Keyword.get(opts, :id, Ecto.UUID.generate()),
       account_number: Keyword.get(opts, :account_number, generate_account_number()),
       initial_balance: Keyword.get(opts, :initial_balance, 0),
-      status: Keyword.get(opts, :status, "open")
+      status: Keyword.get(opts, :status, "active")
     }
     |> Map.merge(Map.new(opts))
   end
@@ -37,6 +38,14 @@ defmodule BankingApi.CommandsFactory do
   def build_command(%CloseBankAccount{}, opts) do
     %CloseBankAccount{
       account_number: Keyword.get(opts, :account_number, generate_account_number())
+    }
+    |> Map.merge(Map.new(opts))
+  end
+
+  def build_command(%UpdateBankAccountStatus{}, opts) do
+    %UpdateBankAccountStatus{
+      account_number: Keyword.get(opts, :account_number, generate_account_number()),
+      status: Keyword.get(opts, :status, "inactive")
     }
     |> Map.merge(Map.new(opts))
   end

@@ -21,6 +21,7 @@ defmodule BankingApiWeb.Router do
 
     post "/bank_account/open", OpenBankAccountController, :create
     post "/bank_account/close", CloseBankAccountController, :create
+    post "/bank_account/status", UpdateBankAccountStatusController, :create
 
     post "/bank_account/deposit", DepositController, :create
     post "/bank_account/withdraw", WithdrawController, :create

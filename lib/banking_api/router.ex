@@ -7,6 +7,7 @@ defmodule BankingApi.Router do
   alias BankingApi.BankAccounts.Commands.CloseBankAccount
   alias BankingApi.BankAccounts.Commands.DepositMoney
   alias BankingApi.BankAccounts.Commands.OpenBankAccount
+  alias BankingApi.BankAccounts.Commands.UpdateBankAccountStatus
 
   alias BankingApi.Support.Middleware.Validate
 
@@ -19,7 +20,8 @@ defmodule BankingApi.Router do
       OpenBankAccount,
       CloseBankAccount,
       DepositMoney,
-      WithdrawMoney
+      WithdrawMoney,
+      UpdateBankAccountStatus
     ],
     to: BankAccount
   )

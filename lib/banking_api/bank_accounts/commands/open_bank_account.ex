@@ -12,7 +12,7 @@ defmodule BankingApi.BankAccounts.Commands.OpenBankAccount do
 
   validates(:initial_balance, number: [greater_than_or_equal_to: 0])
 
-  validates(:status, inclusion: ["open", "closed"])
+  validates(:status, inclusion: ["active", "inactive"])
 
   def assign_id(%__MODULE__{} = open_bank_account, id) do
     %__MODULE__{open_bank_account | id: id}

@@ -32,7 +32,7 @@ defmodule BankingApi.BankAccountsTest do
     @valid_params %{
       "initial_balance" => 1000,
       "account_number" => "0001-01",
-      "status" => "open"
+      "status" => "active"
     }
 
     @tag :integration
@@ -41,7 +41,7 @@ defmodule BankingApi.BankAccountsTest do
 
       account = get_account!(@valid_params["account_number"])
 
-      assert account.status == :open
+      assert account.status == :active
       assert account.balance == 1000
     end
 
@@ -76,7 +76,7 @@ defmodule BankingApi.BankAccountsTest do
       assert :ok = BankAccounts.close_bank_account(@valid_params)
 
       account = get_account!(@account_number)
-      assert account.status == :closed
+      assert account.status == :inactive
     end
 
     @tag :integration

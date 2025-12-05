@@ -7,6 +7,7 @@ defmodule BankingApi.BankAccounts.Projectors.BankAccount do
 
   alias BankingApi.BankAccounts.Events.BankAccountOpened
   alias BankingApi.BankAccounts.Events.BankAccountClosed
+  alias BankingApi.BankAccounts.Events.BankAccountStatusUpdated
   alias BankingApi.BankAccounts.Events.MoneyDeposited
   alias BankingApi.BankAccounts.Events.MoneyWithdrawn
   alias BankingApi.BankAccounts.Projections.BankAccount
@@ -61,6 +62,16 @@ defmodule BankingApi.BankAccounts.Projectors.BankAccount do
     fn multi ->
       update_bank_account(multi, bank_account_query(account_number: account_number),
         set: [status: status]
+      )
+    end
+  )
+
+  project(
+    %BankAccountStatusUpdated{account_number: account_number, status: status},
+    _metadata,
+    fn multi ->
+      update_bank_account(multi, bank_account_query(account_number: account_number),
+        set: [status: String.to_existing_atom(status)]
       )
     end
   )
