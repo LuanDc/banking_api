@@ -1,6 +1,8 @@
 defmodule BankingApi.BankAccounts.Projectors.BankAccountTest do
   use ExUnit.Case, async: true
 
+  import BankingApi.ProjectorHelper
+
   alias BankingApi.BankAccounts.Events.BankAccountOpened
   alias BankingApi.BankAccounts.Events.BankAccountClosed
   alias BankingApi.BankAccounts.Events.BankAccountStatusUpdated
@@ -21,9 +23,7 @@ defmodule BankingApi.BankAccounts.Projectors.BankAccountTest do
 
       result_multi = BankAccountProjector.project_bank_account_opened(multi, event)
 
-      assert %Ecto.Multi{} = result_multi
-      assert {:insert, changeset, []} = Ecto.Multi.to_list(result_multi)[:bank_account]
-      assert %Ecto.Changeset{} = changeset
+      changeset = assert_multi_insert(result_multi, :bank_account)
 
       assert changeset.data.id == event.id
       assert changeset.data.account_number == event.account_number
@@ -43,8 +43,7 @@ defmodule BankingApi.BankAccounts.Projectors.BankAccountTest do
 
       result_multi = BankAccountProjector.project_bank_account_opened(multi, event)
 
-      assert %Ecto.Multi{} = result_multi
-      assert {:insert, changeset, []} = Ecto.Multi.to_list(result_multi)[:bank_account]
+      changeset = assert_multi_insert(result_multi, :bank_account)
 
       assert changeset.data.balance == 0
       assert changeset.data.status == :active
@@ -62,7 +61,7 @@ defmodule BankingApi.BankAccounts.Projectors.BankAccountTest do
 
       result_multi = BankAccountProjector.project_bank_account_opened(multi, event)
 
-      assert {:insert, changeset, []} = Ecto.Multi.to_list(result_multi)[:bank_account]
+      changeset = assert_multi_insert(result_multi, :bank_account)
 
       assert changeset.data.status == :inactive
     end
@@ -79,10 +78,7 @@ defmodule BankingApi.BankAccounts.Projectors.BankAccountTest do
 
       result_multi = BankAccountProjector.project_money_deposited(multi, event)
 
-      assert %Ecto.Multi{} = result_multi
-      assert {:update_all, query, updates, []} = Ecto.Multi.to_list(result_multi)[:bank_account]
-
-      assert %Ecto.Query{} = query
+      {_query, updates} = assert_multi_update_all(result_multi, :bank_account)
 
       assert Keyword.get(updates, :inc) == [balance: 500]
     end
@@ -97,8 +93,7 @@ defmodule BankingApi.BankAccounts.Projectors.BankAccountTest do
 
       result_multi = BankAccountProjector.project_money_deposited(multi, event)
 
-      assert %Ecto.Multi{} = result_multi
-      assert {:update_all, _query, updates, []} = Ecto.Multi.to_list(result_multi)[:bank_account]
+      {_query, updates} = assert_multi_update_all(result_multi, :bank_account)
 
       assert Keyword.get(updates, :inc) == [balance: 1500]
     end
@@ -115,10 +110,7 @@ defmodule BankingApi.BankAccounts.Projectors.BankAccountTest do
 
       result_multi = BankAccountProjector.project_money_withdrawn(multi, event)
 
-      assert %Ecto.Multi{} = result_multi
-      assert {:update_all, query, updates, []} = Ecto.Multi.to_list(result_multi)[:bank_account]
-
-      assert %Ecto.Query{} = query
+      {_query, updates} = assert_multi_update_all(result_multi, :bank_account)
 
       assert Keyword.get(updates, :inc) == [balance: -300]
     end
@@ -133,8 +125,7 @@ defmodule BankingApi.BankAccounts.Projectors.BankAccountTest do
 
       result_multi = BankAccountProjector.project_money_withdrawn(multi, event)
 
-      assert %Ecto.Multi{} = result_multi
-      assert {:update_all, _query, updates, []} = Ecto.Multi.to_list(result_multi)[:bank_account]
+      {_query, updates} = assert_multi_update_all(result_multi, :bank_account)
 
       assert Keyword.get(updates, :inc) == [balance: -750]
     end
@@ -151,10 +142,7 @@ defmodule BankingApi.BankAccounts.Projectors.BankAccountTest do
 
       result_multi = BankAccountProjector.project_bank_account_closed(multi, event)
 
-      assert %Ecto.Multi{} = result_multi
-      assert {:update_all, query, updates, []} = Ecto.Multi.to_list(result_multi)[:bank_account]
-
-      assert %Ecto.Query{} = query
+      {_query, updates} = assert_multi_update_all(result_multi, :bank_account)
 
       assert Keyword.get(updates, :set) == [status: :inactive]
     end
@@ -171,10 +159,7 @@ defmodule BankingApi.BankAccounts.Projectors.BankAccountTest do
 
       result_multi = BankAccountProjector.project_bank_account_status_updated(multi, event)
 
-      assert %Ecto.Multi{} = result_multi
-      assert {:update_all, query, updates, []} = Ecto.Multi.to_list(result_multi)[:bank_account]
-
-      assert %Ecto.Query{} = query
+      {_query, updates} = assert_multi_update_all(result_multi, :bank_account)
 
       assert Keyword.get(updates, :set) == [status: :active]
     end
@@ -189,8 +174,7 @@ defmodule BankingApi.BankAccounts.Projectors.BankAccountTest do
 
       result_multi = BankAccountProjector.project_bank_account_status_updated(multi, event)
 
-      assert %Ecto.Multi{} = result_multi
-      assert {:update_all, _query, updates, []} = Ecto.Multi.to_list(result_multi)[:bank_account]
+      {_query, updates} = assert_multi_update_all(result_multi, :bank_account)
 
       assert Keyword.get(updates, :set) == [status: :inactive]
     end
@@ -205,7 +189,7 @@ defmodule BankingApi.BankAccounts.Projectors.BankAccountTest do
 
       result_multi = BankAccountProjector.project_bank_account_status_updated(multi, event)
 
-      assert {:update_all, _query, updates, []} = Ecto.Multi.to_list(result_multi)[:bank_account]
+      {_query, updates} = assert_multi_update_all(result_multi, :bank_account)
 
       assert Keyword.get(updates, :set) == [status: :active]
     end
