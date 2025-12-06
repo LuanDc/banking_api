@@ -9,7 +9,6 @@ defmodule BankingApi.BankAccountsTest do
 
   import BankingApi.CommandsFactory
 
-  # Unit tests - focus on validation and error handling without full integration
   describe "open_bank_account/1 - unit" do
     @tag :unit
     test "error: returns validation error when initial balance is negative" do

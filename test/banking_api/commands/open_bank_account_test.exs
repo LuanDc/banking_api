@@ -8,15 +8,13 @@ defmodule BankingApi.BankAccounts.Commands.OpenBankAccountTest do
   @tag :unit
   test "success: passes valid command through the pipeline" do
     attrs = %{
+      "id" => Ecto.UUID.generate(),
       "account_number" => "ACC-1",
       "initial_balance" => 100,
       "status" => "active"
     }
 
-    command =
-      attrs
-      |> OpenBankAccount.new()
-      |> OpenBankAccount.assign_id(Ecto.UUID.generate())
+    command = OpenBankAccount.new(attrs)
 
     result = validate(command)
 
@@ -31,7 +29,6 @@ defmodule BankingApi.BankAccounts.Commands.OpenBankAccountTest do
 
     result = validate(command)
 
-    assert result.halted
     assert {:error, :validation_failure, errors} = result.response
 
     assert errors == %{
@@ -43,13 +40,35 @@ defmodule BankingApi.BankAccounts.Commands.OpenBankAccountTest do
   end
 
   @tag :unit
-  test "error: halts pipeline and returns validation errors for command with invalid account number type" do
-    invalid_params = %{"account_number" => 1}
+  test "error: halts pipeline and returns validation errors for command with invalid id type" do
+    invalid_params = %{
+      "id" => 1,
+      "account_number" => "ACC-1",
+      "initial_balance" => 100,
+      "status" => "active"
+    }
+
     command = OpenBankAccount.new(invalid_params)
 
     result = validate(command)
 
-    assert result.halted
+    assert {:error, :validation_failure, errors} = result.response
+    assert errors[:id] == ["must be valid"]
+  end
+
+  @tag :unit
+  test "error: halts pipeline and returns validation errors for command with invalid account number type" do
+    invalid_params = %{
+      "id" => Ecto.UUID.generate(),
+      "account_number" => 1,
+      "initial_balance" => 100,
+      "status" => "active"
+    }
+
+    command = OpenBankAccount.new(invalid_params)
+
+    result = validate(command)
+
     assert {:error, :validation_failure, errors} = result.response
     assert errors[:account_number] == ["is not a valid string"]
   end
