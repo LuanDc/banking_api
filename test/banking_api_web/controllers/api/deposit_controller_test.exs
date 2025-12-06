@@ -101,7 +101,7 @@ defmodule BankingApiWeb.Api.DepositControllerTest do
 
     @tag :web
     test "error: returns error when account is already closed", %{conn: conn} do
-      bank_account = setup_closed_bank_account("ACC-CLOSED-001")
+      bank_account = setup_closed_bank_account()
 
       params = %{
         "id" => bank_account.id,

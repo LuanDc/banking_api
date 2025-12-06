@@ -18,61 +18,76 @@ defmodule BankingApi.BankAccounts.Projectors.BankAccount do
       update_bank_account: 3
     ]
 
-  project(
-    %BankAccountOpened{
-      id: id,
-      account_number: account_number,
-      status: status,
-      initial_balance: initial_balance
-    },
-    _metadata,
-    fn multi ->
-      Ecto.Multi.insert(multi, :bank_account, %BankAccount{
+  # Public functions for testing
+  def project_bank_account_opened(multi, %BankAccountOpened{
         id: id,
         account_number: account_number,
-        status: String.to_existing_atom(status),
-        balance: initial_balance
-      })
-    end
+        status: status,
+        initial_balance: initial_balance
+      }) do
+    Ecto.Multi.insert(multi, :bank_account, %BankAccount{
+      id: id,
+      account_number: account_number,
+      status: String.to_existing_atom(status),
+      balance: initial_balance
+    })
+  end
+
+  def project_money_deposited(multi, %MoneyDeposited{account_number: account_number, amount: amount}) do
+    update_bank_account(multi, bank_account_query(account_number: account_number),
+      inc: [balance: amount]
+    )
+  end
+
+  def project_money_withdrawn(multi, %MoneyWithdrawn{account_number: account_number, amount: amount}) do
+    update_bank_account(multi, bank_account_query(account_number: account_number),
+      inc: [balance: -amount]
+    )
+  end
+
+  def project_bank_account_closed(multi, %BankAccountClosed{account_number: account_number, status: status}) do
+    update_bank_account(multi, bank_account_query(account_number: account_number),
+      set: [status: status]
+    )
+  end
+
+  def project_bank_account_status_updated(multi, %BankAccountStatusUpdated{
+        account_number: account_number,
+        status: status
+      }) do
+    update_bank_account(multi, bank_account_query(account_number: account_number),
+      set: [status: String.to_existing_atom(status)]
+    )
+  end
+
+  # Commanded projections
+  project(
+    %BankAccountOpened{} = event,
+    _metadata,
+    fn multi -> project_bank_account_opened(multi, event) end
   )
 
   project(
-    %MoneyDeposited{account_number: account_number, amount: amount},
+    %MoneyDeposited{} = event,
     _metadata,
-    fn multi ->
-      update_bank_account(multi, bank_account_query(account_number: account_number),
-        inc: [balance: amount]
-      )
-    end
+    fn multi -> project_money_deposited(multi, event) end
   )
 
   project(
-    %MoneyWithdrawn{account_number: account_number, amount: amount},
+    %MoneyWithdrawn{} = event,
     _metadata,
-    fn multi ->
-      update_bank_account(multi, bank_account_query(account_number: account_number),
-        inc: [balance: -amount]
-      )
-    end
+    fn multi -> project_money_withdrawn(multi, event) end
   )
 
   project(
-    %BankAccountClosed{account_number: account_number, status: status},
+    %BankAccountClosed{} = event,
     _metadata,
-    fn multi ->
-      update_bank_account(multi, bank_account_query(account_number: account_number),
-        set: [status: status]
-      )
-    end
+    fn multi -> project_bank_account_closed(multi, event) end
   )
 
   project(
-    %BankAccountStatusUpdated{account_number: account_number, status: status},
+    %BankAccountStatusUpdated{} = event,
     _metadata,
-    fn multi ->
-      update_bank_account(multi, bank_account_query(account_number: account_number),
-        set: [status: String.to_existing_atom(status)]
-      )
-    end
+    fn multi -> project_bank_account_status_updated(multi, event) end
   )
 end

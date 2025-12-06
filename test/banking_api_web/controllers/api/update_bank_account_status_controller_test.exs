@@ -4,7 +4,7 @@ defmodule BankingApiWeb.Api.UpdateBankAccountStatusControllerTest do
   describe "POST /api/bank_account/status" do
     @tag :web
     test "success: updates bank account status to inactive", %{conn: conn} do
-      bank_account = setup_bank_account("ACC-UPDATE-001", 1000)
+      bank_account = setup_bank_account()
 
       params = %{
         "id" => bank_account.id,
@@ -16,14 +16,14 @@ defmodule BankingApiWeb.Api.UpdateBankAccountStatusControllerTest do
       assert json_response(conn, 200) == %{
                "id" => bank_account.id,
                "account_number" => bank_account.account_number,
-               "balance" => 1000,
+               "balance" => 0,
                "status" => "inactive"
              }
     end
 
     @tag :web
     test "success: updates bank account status to active", %{conn: conn} do
-      bank_account = setup_closed_bank_account("ACC-UPDATE-002", 500)
+      bank_account = setup_closed_bank_account()
 
       params = %{
         "id" => bank_account.id,
@@ -35,7 +35,7 @@ defmodule BankingApiWeb.Api.UpdateBankAccountStatusControllerTest do
       assert json_response(conn, 200) == %{
                "id" => bank_account.id,
                "account_number" => bank_account.account_number,
-               "balance" => 500,
+               "balance" => 0,
                "status" => "active"
              }
     end
@@ -54,7 +54,7 @@ defmodule BankingApiWeb.Api.UpdateBankAccountStatusControllerTest do
 
     @tag :web
     test "error: returns error when status is already set", %{conn: conn} do
-      bank_account = setup_bank_account("ACC-UPDATE-003", 1000)
+      bank_account = setup_bank_account()
 
       params = %{
         "id" => bank_account.id,

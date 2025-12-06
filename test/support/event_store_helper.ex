@@ -160,40 +160,31 @@ defmodule BankingApi.EventStoreHelper do
     }
   end
 
-  def setup_bank_account() do
-    event = bank_account_opened()
-
-    stream_id = "bank-account-#{event.id}"
-
-    events = [event]
-
-    append_events(stream_id, events)
-
-    # Give time for projections to process
-    Process.sleep(50)
-
-    BankingApi.Repo.get!(BankingApi.BankAccounts.Projections.BankAccount, event.id)
-  end
-
   @doc """
   Convenience function to setup a bank account with initial balance.
 
   This is the most common test scenario: an open account with some balance.
 
-  ## Parameters
+  ## Options
 
-    * `account_number` - The account number
-    * `balance` - The initial balance (default: 0)
+    * `:account_number` - The account number (default: generated UUID)
+    * `:balance` - The initial balance (default: 0)
 
   ## Examples
 
-      # Create account with 1000 balance
-      setup_bank_account("account-123", 1000)
+      # Create account with default values
+      setup_bank_account()
 
-      # Create account with 0 balance
-      setup_bank_account("account-123")
+      # Create account with specific balance
+      setup_bank_account(balance: 1000)
+
+      # Create account with specific account number and balance
+      setup_bank_account(account_number: "ACC-123", balance: 500)
   """
-  def setup_bank_account(account_number, balance \\ 0) do
+  def setup_bank_account(opts \\ []) do
+    account_number = Keyword.get(opts, :account_number, Ecto.UUID.generate())
+    balance = Keyword.get(opts, :balance, 0)
+
     event =
       bank_account_opened(
         account_number: account_number,
@@ -256,20 +247,30 @@ defmodule BankingApi.EventStoreHelper do
   @doc """
   Convenience function to setup a closed bank account.
 
-  ## Parameters
+  ## Options
 
-    * `account_number` - The account number
-    * `final_balance` - The balance before closing (default: 0)
+    * `:account_number` - The account number (default: generated UUID)
+    * `:balance` - The balance before closing (default: 0)
 
   ## Examples
 
-      setup_closed_bank_account("account-123", 0)
+      # Create closed account with default values
+      setup_closed_bank_account()
+
+      # Create closed account with specific balance
+      setup_closed_bank_account(balance: 500)
+
+      # Create closed account with specific account number and balance
+      setup_closed_bank_account(account_number: "ACC-123", balance: 100)
   """
-  def setup_closed_bank_account(account_number, final_balance \\ 0) do
+  def setup_closed_bank_account(opts \\ []) do
+    account_number = Keyword.get(opts, :account_number, Ecto.UUID.generate())
+    balance = Keyword.get(opts, :balance, 0)
+
     event =
       bank_account_opened(
         account_number: account_number,
-        initial_balance: final_balance
+        initial_balance: balance
       )
 
     stream_id = "bank-account-#{event.id}"

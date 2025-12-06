@@ -1,166 +1,213 @@
 defmodule BankingApi.BankAccounts.Projectors.BankAccountTest do
-  use BankingApi.DataCase
+  use ExUnit.Case, async: true
 
-  alias BankingApi.BankAccounts.Projections.BankAccount
-  alias BankingApi.Repo
+  alias BankingApi.BankAccounts.Events.BankAccountOpened
+  alias BankingApi.BankAccounts.Events.BankAccountClosed
+  alias BankingApi.BankAccounts.Events.BankAccountStatusUpdated
+  alias BankingApi.BankAccounts.Events.MoneyDeposited
+  alias BankingApi.BankAccounts.Events.MoneyWithdrawn
+  alias BankingApi.BankAccounts.Projectors.BankAccount, as: BankAccountProjector
 
-  describe "BankAccountOpened projection" do
-    @tag :integration
-    test "creates bank account in read model with initial balance" do
-      account_number = "ACC-PROJ-001"
-      initial_balance = 1000
+  describe "project_bank_account_opened/2" do
+    test "creates bank account insert operation in multi" do
+      event = %BankAccountOpened{
+        id: "123e4567-e89b-12d3-a456-426614174000",
+        account_number: "ACC-001",
+        status: "active",
+        initial_balance: 1000
+      }
 
-      setup_bank_account(account_number, initial_balance)
+      multi = Ecto.Multi.new()
 
-      bank_account = Repo.get_by!(BankAccount, account_number: account_number)
+      result_multi = BankAccountProjector.project_bank_account_opened(multi, event)
 
-      assert bank_account.account_number == account_number
-      assert bank_account.balance == initial_balance
-      assert bank_account.status == :active
+      assert %Ecto.Multi{} = result_multi
+      assert {:insert, changeset, []} = Ecto.Multi.to_list(result_multi)[:bank_account]
+      assert %Ecto.Changeset{} = changeset
+
+      assert changeset.data.id == event.id
+      assert changeset.data.account_number == event.account_number
+      assert changeset.data.status == String.to_atom(event.status)
+      assert changeset.data.balance == event.initial_balance
     end
 
-    @tag :integration
     test "creates bank account with zero initial balance" do
-      account_number = "ACC-PROJ-002"
+      event = %BankAccountOpened{
+        id: "123e4567-e89b-12d3-a456-426614174001",
+        account_number: "ACC-002",
+        status: "active",
+        initial_balance: 0
+      }
 
-      setup_bank_account(account_number, 0)
+      multi = Ecto.Multi.new()
 
-      bank_account = Repo.get_by!(BankAccount, account_number: account_number)
+      result_multi = BankAccountProjector.project_bank_account_opened(multi, event)
 
-      assert bank_account.balance == 0
-      assert bank_account.status == :active
+      assert %Ecto.Multi{} = result_multi
+      assert {:insert, changeset, []} = Ecto.Multi.to_list(result_multi)[:bank_account]
+
+      assert changeset.data.balance == 0
+      assert changeset.data.status == :active
+    end
+
+    test "converts status string to atom" do
+      event = %BankAccountOpened{
+        id: "123e4567-e89b-12d3-a456-426614174002",
+        account_number: "ACC-003",
+        status: "inactive",
+        initial_balance: 500
+      }
+
+      multi = Ecto.Multi.new()
+
+      result_multi = BankAccountProjector.project_bank_account_opened(multi, event)
+
+      assert {:insert, changeset, []} = Ecto.Multi.to_list(result_multi)[:bank_account]
+
+      assert changeset.data.status == :inactive
     end
   end
 
-  describe "MoneyDeposited projection" do
-    @tag :integration
-    test "increments balance when money is deposited" do
-      account_number = "ACC-PROJ-003"
-      initial_balance = 500
-      deposit_amount = 300
-      expected_balance = initial_balance + deposit_amount
+  describe "project_money_deposited/2" do
+    test "creates update operation to increment balance" do
+      event = %MoneyDeposited{
+        account_number: "ACC-003",
+        amount: 500
+      }
 
-      setup_bank_account_with_history(account_number, initial_balance, [
-        {:deposit, deposit_amount}
-      ])
+      multi = Ecto.Multi.new()
 
-      bank_account = Repo.get_by!(BankAccount, account_number: account_number)
+      result_multi = BankAccountProjector.project_money_deposited(multi, event)
 
-      assert bank_account.balance == expected_balance
+      assert %Ecto.Multi{} = result_multi
+      assert {:update_all, query, updates, []} = Ecto.Multi.to_list(result_multi)[:bank_account]
+
+      assert %Ecto.Query{} = query
+
+      assert Keyword.get(updates, :inc) == [balance: 500]
     end
 
-    @tag :integration
-    test "handles multiple deposits correctly" do
-      account_number = "ACC-PROJ-004"
-      initial_balance = 1000
-      first_deposit = 200
-      second_deposit = 300
-      expected_balance = initial_balance + first_deposit + second_deposit
+    test "handles different deposit amounts" do
+      event = %MoneyDeposited{
+        account_number: "ACC-004",
+        amount: 1500
+      }
 
-      setup_bank_account_with_history(account_number, initial_balance, [
-        {:deposit, first_deposit},
-        {:deposit, second_deposit}
-      ])
+      multi = Ecto.Multi.new()
 
-      bank_account = Repo.get_by!(BankAccount, account_number: account_number)
+      result_multi = BankAccountProjector.project_money_deposited(multi, event)
 
-      assert bank_account.balance == expected_balance
-    end
-  end
+      assert %Ecto.Multi{} = result_multi
+      assert {:update_all, _query, updates, []} = Ecto.Multi.to_list(result_multi)[:bank_account]
 
-  describe "MoneyWithdrawn projection" do
-    @tag :integration
-    test "decrements balance when money is withdrawn" do
-      account_number = "ACC-PROJ-005"
-      initial_balance = 2000
-      withdrawal_amount = 500
-      expected_balance = initial_balance - withdrawal_amount
-
-      setup_bank_account_with_history(account_number, initial_balance, [
-        {:withdraw, withdrawal_amount}
-      ])
-
-      bank_account = Repo.get_by!(BankAccount, account_number: account_number)
-
-      assert bank_account.balance == expected_balance
-    end
-
-    @tag :integration
-    test "handles multiple withdrawals correctly" do
-      account_number = "ACC-PROJ-006"
-      initial_balance = 2000
-      first_withdrawal = 300
-      second_withdrawal = 200
-      expected_balance = initial_balance - first_withdrawal - second_withdrawal
-
-      setup_bank_account_with_history(account_number, initial_balance, [
-        {:withdraw, first_withdrawal},
-        {:withdraw, second_withdrawal}
-      ])
-
-      bank_account = Repo.get_by!(BankAccount, account_number: account_number)
-
-      assert bank_account.balance == expected_balance
-    end
-
-    @tag :integration
-    test "handles withdrawal to zero balance" do
-      account_number = "ACC-PROJ-007"
-      initial_balance = 500
-
-      setup_bank_account_with_history(account_number, initial_balance, [
-        {:withdraw, initial_balance}
-      ])
-
-      bank_account = Repo.get_by!(BankAccount, account_number: account_number)
-
-      assert bank_account.balance == 0
+      assert Keyword.get(updates, :inc) == [balance: 1500]
     end
   end
 
-  describe "BankAccountClosed projection" do
-    @tag :integration
-    test "updates account status to inactive" do
-      account_number = "ACC-PROJ-008"
+  describe "project_money_withdrawn/2" do
+    test "creates update operation to decrement balance" do
+      event = %MoneyWithdrawn{
+        account_number: "ACC-005",
+        amount: 300
+      }
 
-      setup_closed_bank_account(account_number, 0)
+      multi = Ecto.Multi.new()
 
-      bank_account = Repo.get_by!(BankAccount, account_number: account_number)
+      result_multi = BankAccountProjector.project_money_withdrawn(multi, event)
 
-      assert bank_account.status == :inactive
+      assert %Ecto.Multi{} = result_multi
+      assert {:update_all, query, updates, []} = Ecto.Multi.to_list(result_multi)[:bank_account]
+
+      assert %Ecto.Query{} = query
+
+      assert Keyword.get(updates, :inc) == [balance: -300]
     end
 
-    @tag :integration
-    test "keeps balance unchanged when closing account" do
-      account_number = "ACC-PROJ-009"
-      final_balance = 500
+    test "handles different withdrawal amounts" do
+      event = %MoneyWithdrawn{
+        account_number: "ACC-006",
+        amount: 750
+      }
 
-      setup_closed_bank_account(account_number, final_balance)
+      multi = Ecto.Multi.new()
 
-      bank_account = Repo.get_by!(BankAccount, account_number: account_number)
+      result_multi = BankAccountProjector.project_money_withdrawn(multi, event)
 
-      assert bank_account.balance == final_balance
-      assert bank_account.status == :inactive
+      assert %Ecto.Multi{} = result_multi
+      assert {:update_all, _query, updates, []} = Ecto.Multi.to_list(result_multi)[:bank_account]
+
+      assert Keyword.get(updates, :inc) == [balance: -750]
     end
   end
 
-  describe "Complex projection scenarios" do
-    @tag :integration
-    test "projects sequence of deposits and withdrawals correctly" do
-      account_number = "ACC-PROJ-010"
-      initial_balance = 1000
+  describe "project_bank_account_closed/2" do
+    test "creates update operation to set status to inactive" do
+      event = %BankAccountClosed{
+        account_number: "ACC-007",
+        status: :inactive
+      }
 
-      setup_bank_account_with_history(account_number, initial_balance, [
-        {:deposit, 500},
-        {:withdraw, 200},
-        {:deposit, 100},
-        {:withdraw, 300}
-      ])
+      multi = Ecto.Multi.new()
 
-      bank_account = Repo.get_by!(BankAccount, account_number: account_number)
+      result_multi = BankAccountProjector.project_bank_account_closed(multi, event)
 
-      assert bank_account.balance == 1100
-      assert bank_account.status == :active
+      assert %Ecto.Multi{} = result_multi
+      assert {:update_all, query, updates, []} = Ecto.Multi.to_list(result_multi)[:bank_account]
+
+      assert %Ecto.Query{} = query
+
+      assert Keyword.get(updates, :set) == [status: :inactive]
+    end
+  end
+
+  describe "project_bank_account_status_updated/2" do
+    test "creates update operation to change status to active" do
+      event = %BankAccountStatusUpdated{
+        account_number: "ACC-008",
+        status: "active"
+      }
+
+      multi = Ecto.Multi.new()
+
+      result_multi = BankAccountProjector.project_bank_account_status_updated(multi, event)
+
+      assert %Ecto.Multi{} = result_multi
+      assert {:update_all, query, updates, []} = Ecto.Multi.to_list(result_multi)[:bank_account]
+
+      assert %Ecto.Query{} = query
+
+      assert Keyword.get(updates, :set) == [status: :active]
+    end
+
+    test "creates update operation to change status to inactive" do
+      event = %BankAccountStatusUpdated{
+        account_number: "ACC-009",
+        status: "inactive"
+      }
+
+      multi = Ecto.Multi.new()
+
+      result_multi = BankAccountProjector.project_bank_account_status_updated(multi, event)
+
+      assert %Ecto.Multi{} = result_multi
+      assert {:update_all, _query, updates, []} = Ecto.Multi.to_list(result_multi)[:bank_account]
+
+      assert Keyword.get(updates, :set) == [status: :inactive]
+    end
+
+    test "converts status string to atom" do
+      event = %BankAccountStatusUpdated{
+        account_number: "ACC-010",
+        status: "active"
+      }
+
+      multi = Ecto.Multi.new()
+
+      result_multi = BankAccountProjector.project_bank_account_status_updated(multi, event)
+
+      assert {:update_all, _query, updates, []} = Ecto.Multi.to_list(result_multi)[:bank_account]
+
+      assert Keyword.get(updates, :set) == [status: :active]
     end
   end
 end

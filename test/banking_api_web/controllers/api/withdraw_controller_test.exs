@@ -4,7 +4,7 @@ defmodule BankingApiWeb.Api.WithdrawControllerTest do
   describe "POST /api/bank_account/withdraw" do
     @tag :web
     test "success: withdraws money when data is valid", %{conn: conn} do
-      bank_account = setup_bank_account("ACC-WITHDRAW-001", 200)
+      bank_account = setup_bank_account(balance: 200)
 
       params = %{
         "id" => bank_account.id,
@@ -23,7 +23,7 @@ defmodule BankingApiWeb.Api.WithdrawControllerTest do
 
     @tag :web
     test "error: returns error when account doesn't have sufficient funds", %{conn: conn} do
-      bank_account = setup_bank_account("ACC-WITHDRAW-002", 50)
+      bank_account = setup_bank_account(balance: 50)
 
       params = %{
         "id" => bank_account.id,
@@ -114,7 +114,7 @@ defmodule BankingApiWeb.Api.WithdrawControllerTest do
 
     @tag :web
     test "error: returns error when account is already closed", %{conn: conn} do
-      bank_account = setup_closed_bank_account("ACC-WITHDRAW-003", 100)
+      bank_account = setup_closed_bank_account()
 
       params = %{
         "id" => bank_account.id,
