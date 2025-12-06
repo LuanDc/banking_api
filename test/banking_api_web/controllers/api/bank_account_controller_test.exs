@@ -1,7 +1,7 @@
 defmodule BankingApiWeb.Api.BankAccountControllerTest do
   use BankingApiWeb.ConnCase
 
-  describe "GET /api/bank_account/:account_number" do
+  describe "GET /api/bank_account/:id" do
     @tag :web
     test "success: returns bank account when it exists", %{conn: conn} do
       bank_account = insert(:bank_account)

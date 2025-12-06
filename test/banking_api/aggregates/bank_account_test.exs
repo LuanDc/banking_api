@@ -6,8 +6,7 @@ defmodule BankingApi.Aggregates.BankAccountTest do
   alias BankingApi.BankAccounts.Commands.{
     OpenBankAccount,
     DepositMoney,
-    WithdrawMoney,
-    CloseBankAccount
+    WithdrawMoney
   }
 
   alias BankingApi.BankAccounts.Events.{
@@ -20,7 +19,6 @@ defmodule BankingApi.Aggregates.BankAccountTest do
   describe "BankAccount.execute/2 - OpenBankAccount" do
     @tag :unit
     test "returns BankAccountOpened event when account is not initialized" do
-      # ARRANGE
       aggregate = %BankAccount{account_number: nil}
 
       command = %OpenBankAccount{
@@ -30,10 +28,8 @@ defmodule BankingApi.Aggregates.BankAccountTest do
         status: "active"
       }
 
-      # ACT
       result = BankAccount.execute(aggregate, command)
 
-      # ASSERT
       assert result == %BankAccountOpened{
                id: "550e8400-e29b-41d4-a716-446655440000",
                account_number: "ACC-001",
@@ -240,85 +236,9 @@ defmodule BankingApi.Aggregates.BankAccountTest do
     end
   end
 
-  describe "BankAccount.execute/2 - CloseBankAccount" do
-    @tag :unit
-    test "returns BankAccountClosed event when account exists and is open" do
-      aggregate = %BankAccount{
-        id: "acc-id-007",
-        account_number: "ACC-007",
-        balance: 0,
-        status: "active"
-      }
-
-      command = %CloseBankAccount{
-        id: "acc-id-007"
-      }
-
-      result = BankAccount.execute(aggregate, command)
-
-      assert result == %BankAccountClosed{
-               account_number: "ACC-007",
-               status: "inactive"
-             }
-    end
-
-    @tag :unit
-    test "can close account with positive balance" do
-      aggregate = %BankAccount{
-        id: "acc-id-008",
-        account_number: "ACC-008",
-        balance: 1000,
-        status: "active"
-      }
-
-      command = %CloseBankAccount{
-        id: "acc-id-008"
-      }
-
-      result = BankAccount.execute(aggregate, command)
-
-      assert result == %BankAccountClosed{
-               account_number: "ACC-008",
-               status: "inactive"
-             }
-    end
-
-    @tag :unit
-    test "returns error when account does not exist" do
-      aggregate = %BankAccount{account_number: nil}
-
-      command = %CloseBankAccount{
-        id: Ecto.UUID.generate()
-      }
-
-      result = BankAccount.execute(aggregate, command)
-
-      assert result == {:error, :not_found}
-    end
-
-    @tag :unit
-    test "returns error when account is already closed" do
-      aggregate = %BankAccount{
-        id: "acc-id-009",
-        account_number: "ACC-009",
-        balance: 0,
-        status: "inactive"
-      }
-
-      command = %CloseBankAccount{
-        id: "acc-id-009"
-      }
-
-      result = BankAccount.execute(aggregate, command)
-
-      assert result == {:error, :account_closed}
-    end
-  end
-
   describe "BankAccount.apply/2 - Event Sourcing" do
     @tag :unit
     test "applies BankAccountOpened event to rebuild aggregate state" do
-      # ARRANGE
       aggregate = %BankAccount{}
 
       event = %BankAccountOpened{
@@ -328,10 +248,8 @@ defmodule BankingApi.Aggregates.BankAccountTest do
         status: "active"
       }
 
-      # ACT
       result = BankAccount.apply(aggregate, event)
 
-      # ASSERT
       assert result == %BankAccount{
                id: "event-id-001",
                account_number: "ACC-010",
@@ -400,10 +318,8 @@ defmodule BankingApi.Aggregates.BankAccountTest do
 
     @tag :unit
     test "applies sequence of events correctly (event sourcing replay)" do
-      # ARRANGE: Start with empty aggregate
       aggregate = %BankAccount{}
 
-      # ACT: Apply sequence of events
       aggregate =
         aggregate
         |> BankAccount.apply(%BankAccountOpened{
@@ -421,7 +337,6 @@ defmodule BankingApi.Aggregates.BankAccountTest do
           amount: 300
         })
 
-      # ASSERT: Final state is correct
       assert aggregate == %BankAccount{
                id: "seq-id-001",
                account_number: "ACC-SEQ",

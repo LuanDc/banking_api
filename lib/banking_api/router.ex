@@ -4,7 +4,6 @@ defmodule BankingApi.Router do
   alias BankingApi.BankAccounts.Aggregates.BankAccount
 
   alias BankingApi.BankAccounts.Commands.WithdrawMoney
-  alias BankingApi.BankAccounts.Commands.CloseBankAccount
   alias BankingApi.BankAccounts.Commands.DepositMoney
   alias BankingApi.BankAccounts.Commands.OpenBankAccount
   alias BankingApi.BankAccounts.Commands.UpdateBankAccountStatus
@@ -18,7 +17,6 @@ defmodule BankingApi.Router do
   dispatch(
     [
       OpenBankAccount,
-      CloseBankAccount,
       DepositMoney,
       WithdrawMoney,
       UpdateBankAccountStatus

@@ -3,7 +3,6 @@ defmodule BankingApi.CommandsFactory do
     OpenBankAccount,
     DepositMoney,
     WithdrawMoney,
-    CloseBankAccount,
     UpdateBankAccountStatus
   }
 
@@ -31,13 +30,6 @@ defmodule BankingApi.CommandsFactory do
     %WithdrawMoney{
       id: Keyword.get(opts, :id, Ecto.UUID.generate()),
       amount: Keyword.get(opts, :amount, 50)
-    }
-    |> Map.merge(Map.new(opts))
-  end
-
-  def build_command(%CloseBankAccount{}, opts) do
-    %CloseBankAccount{
-      id: Keyword.get(opts, :id, Ecto.UUID.generate())
     }
     |> Map.merge(Map.new(opts))
   end

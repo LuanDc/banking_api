@@ -194,10 +194,11 @@ defmodule BankingApi.EventStoreHelper do
       setup_bank_account("account-123")
   """
   def setup_bank_account(account_number, balance \\ 0) do
-    event = bank_account_opened(
-      account_number: account_number,
-      initial_balance: balance
-    )
+    event =
+      bank_account_opened(
+        account_number: account_number,
+        initial_balance: balance
+      )
 
     stream_id = "bank-account-#{event.id}"
 
@@ -265,10 +266,11 @@ defmodule BankingApi.EventStoreHelper do
       setup_closed_bank_account("account-123", 0)
   """
   def setup_closed_bank_account(account_number, final_balance \\ 0) do
-    event = bank_account_opened(
-      account_number: account_number,
-      initial_balance: final_balance
-    )
+    event =
+      bank_account_opened(
+        account_number: account_number,
+        initial_balance: final_balance
+      )
 
     stream_id = "bank-account-#{event.id}"
 

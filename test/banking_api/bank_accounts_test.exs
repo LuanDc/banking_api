@@ -39,38 +39,6 @@ defmodule BankingApi.BankAccountsTest do
     end
   end
 
-  describe "close_bank_account/1 - unit" do
-    @tag :unit
-    test "error: returns validation error when id is nil" do
-      invalid_params = %{"id" => nil}
-
-      assert {:error, :validation_failure, errors} =
-               BankAccounts.close_bank_account(invalid_params)
-
-      assert errors == %{id: ["can't be empty", "must be valid"]}
-    end
-
-    @tag :unit
-    test "error: returns validation error when id is invalid" do
-      invalid_params = %{"id" => "invalid-uuid"}
-
-      assert {:error, :validation_failure, errors} =
-               BankAccounts.close_bank_account(invalid_params)
-
-      assert errors[:id] == ["must be valid"]
-    end
-
-    @tag :unit
-    test "error: returns validation error when id is missing" do
-      invalid_params = %{}
-
-      assert {:error, :validation_failure, errors} =
-               BankAccounts.close_bank_account(invalid_params)
-
-      assert errors == %{id: ["can't be empty", "must be valid"]}
-    end
-  end
-
   describe "deposit/1 - unit" do
     @tag :unit
     test "error: returns validation error when id is nil" do
@@ -191,24 +159,6 @@ defmodule BankingApi.BankAccountsTest do
     end
 
     @tag :integration
-    test "close_bank_account/1: success flow updates status to inactive" do
-      bank_account = create_account("ACC-002")
-
-      params = %{"id" => bank_account.id}
-
-      assert {:ok, updated_account} = BankAccounts.close_bank_account(params)
-
-      assert updated_account.status == :inactive
-    end
-
-    @tag :integration
-    test "close_bank_account/1: returns not found when account does not exist" do
-      params = %{"id" => Ecto.UUID.generate()}
-
-      assert {:error, :not_found} = BankAccounts.close_bank_account(params)
-    end
-
-    @tag :integration
     test "deposit/1: success flow increases balance" do
       bank_account = create_account("ACC-003")
 
@@ -251,35 +201,6 @@ defmodule BankingApi.BankAccountsTest do
       params = %{"id" => bank_account.id, "amount" => 100}
 
       assert {:error, :insufficient_funds} = BankAccounts.withdraw(params)
-    end
-
-    @tag :integration
-    test "operations on closed account: cannot deposit" do
-      bank_account = create_account(unique_account_number())
-      BankAccounts.close_bank_account(%{"id" => bank_account.id})
-
-      assert {:error, :account_closed} =
-               BankAccounts.deposit(%{"id" => bank_account.id, "amount" => 50})
-    end
-
-    @tag :integration
-    test "operations on closed account: cannot withdraw" do
-      bank_account = create_account(unique_account_number(), 100)
-      BankAccounts.close_bank_account(%{"id" => bank_account.id})
-
-      assert {:error, :account_closed} =
-               BankAccounts.withdraw(%{"id" => bank_account.id, "amount" => 50})
-    end
-
-    @tag :integration
-    test "operations on closed account: cannot close twice" do
-      bank_account = create_account(unique_account_number())
-
-      assert {:ok, _closed_account} =
-               BankAccounts.close_bank_account(%{"id" => bank_account.id})
-
-      assert {:error, :account_closed} =
-               BankAccounts.close_bank_account(%{"id" => bank_account.id})
     end
   end
 end

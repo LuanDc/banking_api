@@ -1,6 +1,5 @@
 defmodule BankingApi.BankAccounts do
   alias BankingApi.BankingApiApp
-  alias BankingApi.BankAccounts.Commands.CloseBankAccount
   alias BankingApi.BankAccounts.Commands.OpenBankAccount
   alias BankingApi.BankAccounts.Commands.DepositMoney
   alias BankingApi.BankAccounts.Commands.WithdrawMoney
@@ -51,12 +50,6 @@ defmodule BankingApi.BankAccounts do
 
   def withdraw(params) do
     with :ok <- BankingApiApp.dispatch(WithdrawMoney.new(params), consistency: :strong) do
-      get(params["id"])
-    end
-  end
-
-  def close_bank_account(params) do
-    with :ok <- BankingApiApp.dispatch(CloseBankAccount.new(params), consistency: :strong) do
       get(params["id"])
     end
   end

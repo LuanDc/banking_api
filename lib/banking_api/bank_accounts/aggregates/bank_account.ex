@@ -39,14 +39,6 @@ defmodule BankingApi.BankAccounts.Aggregates.BankAccount do
     {:error, :account_already_opened}
   end
 
-  # Close Bank Account
-
-  @impl Aggregate
-  def execute(%BankAccount{account_number: account_number, status: "active"}, %CloseBankAccount{})
-      when not is_nil(account_number) do
-    %BankAccountClosed{account_number: account_number, status: "inactive"}
-  end
-
   # Update Bank Account Status
 
   @impl Aggregate
