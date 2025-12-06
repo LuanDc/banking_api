@@ -17,7 +17,7 @@ defmodule BankingApiWeb.Api.BankAccountControllerTest do
     end
 
     @tag :web
-    test "error: returns 404 when account_number does not exist", %{conn: conn} do
+    test "error: returns 404 when bank account does not exist", %{conn: conn} do
       id = Ecto.UUID.generate()
 
       conn = get(conn, ~p"/api/bank_account/#{id}")

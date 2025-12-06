@@ -27,7 +27,7 @@ defmodule BankingApi.BankAccounts.Commands.DepositMoneyTest do
     assert {:error, :validation_failure, errors} = result.response
 
     assert errors == %{
-             id: ["can't be empty", "must be valid"],
+             id: ["must be valid"],
              amount: ["must be a number greater than or equal to 0"]
            }
   end

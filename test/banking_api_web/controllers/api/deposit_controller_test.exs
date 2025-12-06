@@ -22,15 +22,69 @@ defmodule BankingApiWeb.Api.DepositControllerTest do
     end
 
     @tag :web
-    test "error: returns error when data is invalid", %{conn: conn} do
-      invalid_params = %{
-        "id" => nil,
-        "amount" => nil
-      }
+    test "error: returns error when id is empty", %{conn: conn} do
+      invalid_params = %{"id" => nil, "amount" => 100}
 
       conn = post(conn, ~p"/api/bank_account/deposit", invalid_params)
 
-      assert json_response(conn, 400)["errors"] != %{}
+      assert json_response(conn, 400) == %{
+               "error" => %{
+                 "id" => ["must be valid"]
+               }
+             }
+    end
+
+    @tag :web
+    test "error: returns error when id id a invalid UUID", %{conn: conn} do
+      invalid_params = %{"id" => "invalid_uuid", "amount" => 100}
+
+      conn = post(conn, ~p"/api/bank_account/deposit", invalid_params)
+
+      assert json_response(conn, 400) == %{
+               "error" => %{
+                 "id" => ["must be valid"]
+               }
+             }
+    end
+
+    @tag :web
+    test "error: returns error when amount is empty", %{conn: conn} do
+      invalid_params = %{"id" => Ecto.UUID.generate(), "amount" => nil}
+
+      conn = post(conn, ~p"/api/bank_account/deposit", invalid_params)
+
+      assert json_response(conn, 400) == %{
+               "error" => %{
+                 "amount" => ["must be a number greater than or equal to 0"]
+               }
+             }
+    end
+
+    @tag :web
+    test "error: returns error when the given amount is not a number", %{conn: conn} do
+      invalid_params = %{"id" => Ecto.UUID.generate(), "amount" => "100"}
+
+      conn = post(conn, ~p"/api/bank_account/deposit", invalid_params)
+
+      assert json_response(conn, 400) == %{
+               "error" => %{
+                 "amount" => ["must be a number greater than or equal to 0"]
+               }
+             }
+    end
+
+    @tag :web
+    test "error: returns error when the given amount is number but is not greater than or equal to 0",
+         %{conn: conn} do
+      invalid_params = %{"id" => Ecto.UUID.generate(), "amount" => -1}
+
+      conn = post(conn, ~p"/api/bank_account/deposit", invalid_params)
+
+      assert json_response(conn, 400) == %{
+               "error" => %{
+                 "amount" => ["must be a number greater than or equal to 0"]
+               }
+             }
     end
 
     @tag :web

@@ -67,26 +67,68 @@ defmodule BankingApiWeb.Api.UpdateBankAccountStatusControllerTest do
     end
 
     @tag :web
-    test "error: returns validation error for invalid status", %{conn: conn} do
-      bank_account = setup_bank_account("ACC-UPDATE-004", 1000)
+    test "error: returns error when id is empty", %{conn: conn} do
+      invalid_params = %{"id" => nil, "status" => "inactive"}
 
-      params = %{
-        "id" => bank_account.id,
-        "status" => "invalid"
-      }
+      conn = post(conn, ~p"/api/bank_account/status", invalid_params)
 
-      conn = post(conn, ~p"/api/bank_account/status", params)
-
-      assert json_response(conn, 400)["error"] != %{}
+      assert json_response(conn, 400) == %{
+               "error" => %{
+                 "id" => ["can't be empty", "must be valid"]
+               }
+             }
     end
 
     @tag :web
-    test "error: returns validation error when id is missing", %{conn: conn} do
-      params = %{"status" => "inactive"}
+    test "error: returns error when id is a invalid UUID", %{conn: conn} do
+      invalid_params = %{"id" => "invalid_uuid", "status" => "inactive"}
 
-      conn = post(conn, ~p"/api/bank_account/status", params)
+      conn = post(conn, ~p"/api/bank_account/status", invalid_params)
 
-      assert json_response(conn, 400)["error"] != %{}
+      assert json_response(conn, 400) == %{
+               "error" => %{
+                 "id" => ["must be valid"]
+               }
+             }
+    end
+
+    @tag :web
+    test "error: returns error when status is empty", %{conn: conn} do
+      invalid_params = %{"id" => Ecto.UUID.generate(), "status" => nil}
+
+      conn = post(conn, ~p"/api/bank_account/status", invalid_params)
+
+      assert json_response(conn, 400) == %{
+               "error" => %{
+                 "status" => ["must be one of [\"active\", \"inactive\"]"]
+               }
+             }
+    end
+
+    @tag :web
+    test "error: returns error when status is invalid", %{conn: conn} do
+      invalid_params = %{"id" => Ecto.UUID.generate(), "status" => "closed"}
+
+      conn = post(conn, ~p"/api/bank_account/status", invalid_params)
+
+      assert json_response(conn, 400) == %{
+               "error" => %{
+                 "status" => ["must be one of [\"active\", \"inactive\"]"]
+               }
+             }
+    end
+
+    @tag :web
+    test "error: returns error when status is not a string", %{conn: conn} do
+      invalid_params = %{"id" => Ecto.UUID.generate(), "status" => 1}
+
+      conn = post(conn, ~p"/api/bank_account/status", invalid_params)
+
+      assert json_response(conn, 400) == %{
+               "error" => %{
+                 "status" => ["must be one of [\"active\", \"inactive\"]"]
+               }
+             }
     end
   end
 end

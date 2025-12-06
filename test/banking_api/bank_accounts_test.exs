@@ -45,7 +45,7 @@ defmodule BankingApi.BankAccountsTest do
 
       assert {:error, :validation_failure, errors} = BankAccounts.deposit(invalid_params)
 
-      assert errors == %{id: ["can't be empty", "must be valid"]}
+      assert errors == %{id: ["must be valid"]}
     end
 
     @tag :unit
