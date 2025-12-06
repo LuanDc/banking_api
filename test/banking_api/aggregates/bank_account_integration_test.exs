@@ -68,7 +68,7 @@ defmodule BankingApi.Aggregates.BankAccountIntegrationTest do
       assert BankingApiApp.dispatch([open_bank_account, deposit_money]) == :ok
 
       wait_for_event(BankingApiApp, MoneyDeposited, fn event ->
-        assert event.account_number == open_bank_account.account_number
+        assert event.id == open_bank_account.id
         assert event.amount == deposit_money.amount
       end)
 
@@ -104,7 +104,7 @@ defmodule BankingApi.Aggregates.BankAccountIntegrationTest do
       assert BankingApiApp.dispatch([open_bank_account, withdraw_money]) == :ok
 
       wait_for_event(BankingApiApp, MoneyWithdrawn, fn event ->
-        assert event.account_number == open_bank_account.account_number
+        assert event.id == open_bank_account.id
         assert event.amount == withdrawal_amount
       end)
 

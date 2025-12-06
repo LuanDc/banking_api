@@ -73,8 +73,10 @@ defmodule BankingApi.BankAccounts.Projectors.BankAccountTest do
   describe "project_money_deposited/2" do
     @tag :unit
     test "creates update operation to increment balance" do
+      bank_account_id = "123e4567-e89b-12d3-a456-426614174003"
+
       event = %MoneyDeposited{
-        account_number: "ACC-003",
+        id: bank_account_id,
         amount: 500
       }
 
@@ -89,8 +91,10 @@ defmodule BankingApi.BankAccounts.Projectors.BankAccountTest do
 
     @tag :unit
     test "handles different deposit amounts" do
+      bank_account_id = "123e4567-e89b-12d3-a456-426614174004"
+
       event = %MoneyDeposited{
-        account_number: "ACC-004",
+        id: bank_account_id,
         amount: 1500
       }
 
@@ -107,8 +111,10 @@ defmodule BankingApi.BankAccounts.Projectors.BankAccountTest do
   describe "project_money_withdrawn/2" do
     @tag :unit
     test "creates update operation to decrement balance" do
+      bank_account_id = "123e4567-e89b-12d3-a456-426614174005"
+
       event = %MoneyWithdrawn{
-        account_number: "ACC-005",
+        id: bank_account_id,
         amount: 300
       }
 
@@ -123,8 +129,10 @@ defmodule BankingApi.BankAccounts.Projectors.BankAccountTest do
 
     @tag :unit
     test "handles different withdrawal amounts" do
+      bank_account_id = "123e4567-e89b-12d3-a456-426614174006"
+
       event = %MoneyWithdrawn{
-        account_number: "ACC-006",
+        id: bank_account_id,
         amount: 750
       }
 

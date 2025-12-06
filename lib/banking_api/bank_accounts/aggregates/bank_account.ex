@@ -63,21 +63,21 @@ defmodule BankingApi.BankAccounts.Aggregates.BankAccount do
 
   @impl Aggregate
   def execute(
-        %BankAccount{status: "active", account_number: account_number},
+        %BankAccount{status: "active", id: id},
         %DepositMoney{amount: amount}
       ) do
-    money_deposited(account_number, amount)
+    money_deposited(id, amount)
   end
 
   # Withdraw Money
 
   @impl Aggregate
   def execute(
-        %BankAccount{status: "active", account_number: account_number} = bank_account,
-        %WithdrawMoney{amount: amount}
+        %BankAccount{status: "active"} = bank_account,
+        %WithdrawMoney{id: id, amount: amount}
       )
       when amount <= bank_account.balance do
-    %MoneyWithdrawn{account_number: account_number, amount: amount, date: DateTime.utc_now()}
+    %MoneyWithdrawn{id: id, amount: amount, date: DateTime.utc_now()}
   end
 
   @impl Aggregate
@@ -150,9 +150,9 @@ defmodule BankingApi.BankAccounts.Aggregates.BankAccount do
     %BankAccount{account | status: status}
   end
 
-  defp money_deposited(account_number, amount) do
+  defp money_deposited(id, amount) do
     %MoneyDeposited{
-      account_number: account_number,
+      id: id,
       amount: amount,
       date: DateTime.utc_now()
     }

@@ -37,7 +37,7 @@ defmodule BankingApi.Aggregates.BankAccountTest do
                status: "active"
              } = result
 
-      assert result.date != nil
+      refute result.date == nil
     end
 
     @tag :unit
@@ -60,7 +60,7 @@ defmodule BankingApi.Aggregates.BankAccountTest do
                status: "active"
              } = result
 
-      assert result.date != nil
+      refute result.date == nil
     end
 
     @tag :unit
@@ -103,11 +103,11 @@ defmodule BankingApi.Aggregates.BankAccountTest do
       result = BankAccount.execute(aggregate, command)
 
       assert %MoneyDeposited{
-               account_number: "ACC-001",
+               id: "acc-id-001",
                amount: 300
              } = result
 
-      assert result.date != nil
+      refute result.date == nil
     end
 
     @tag :unit
@@ -162,11 +162,11 @@ defmodule BankingApi.Aggregates.BankAccountTest do
       result = BankAccount.execute(aggregate, command)
 
       assert %MoneyWithdrawn{
-               account_number: "ACC-003",
+               id: "acc-id-003",
                amount: 300
              } = result
 
-      assert result.date != nil
+      refute result.date == nil
     end
 
     @tag :unit
@@ -186,11 +186,11 @@ defmodule BankingApi.Aggregates.BankAccountTest do
       result = BankAccount.execute(aggregate, command)
 
       assert %MoneyWithdrawn{
-               account_number: "ACC-004",
+               id: "acc-id-004",
                amount: 500
              } = result
 
-      assert result.date != nil
+      refute result.date == nil
     end
 
     @tag :unit
@@ -278,7 +278,7 @@ defmodule BankingApi.Aggregates.BankAccountTest do
       }
 
       event = %MoneyDeposited{
-        account_number: "ACC-011",
+        id: "acc-id-011",
         amount: 300
       }
 
@@ -297,7 +297,7 @@ defmodule BankingApi.Aggregates.BankAccountTest do
       }
 
       event = %MoneyWithdrawn{
-        account_number: "ACC-012",
+        id: "acc-id-012",
         amount: 400
       }
 
@@ -339,11 +339,11 @@ defmodule BankingApi.Aggregates.BankAccountTest do
           status: "active"
         })
         |> BankAccount.apply(%MoneyDeposited{
-          account_number: "ACC-SEQ",
+          id: "seq-id-001",
           amount: 500
         })
         |> BankAccount.apply(%MoneyWithdrawn{
-          account_number: "ACC-SEQ",
+          id: "seq-id-001",
           amount: 300
         })
 
