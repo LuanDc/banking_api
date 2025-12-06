@@ -61,14 +61,14 @@ defmodule BankingApi.Aggregates.BankAccountIntegrationTest do
 
       deposit_money =
         build_command(%DepositMoney{},
-          id: open_bank_account.id,
+          bank_account_id: open_bank_account.id,
           amount: 100
         )
 
       assert BankingApiApp.dispatch([open_bank_account, deposit_money]) == :ok
 
       wait_for_event(BankingApiApp, MoneyDeposited, fn event ->
-        assert event.id == open_bank_account.id
+        assert event.bank_account_id == open_bank_account.id
         assert event.amount == deposit_money.amount
       end)
 
@@ -97,14 +97,14 @@ defmodule BankingApi.Aggregates.BankAccountIntegrationTest do
 
       withdraw_money =
         build_command(%WithdrawMoney{},
-          id: open_bank_account.id,
+          bank_account_id: open_bank_account.id,
           amount: withdrawal_amount
         )
 
       assert BankingApiApp.dispatch([open_bank_account, withdraw_money]) == :ok
 
       wait_for_event(BankingApiApp, MoneyWithdrawn, fn event ->
-        assert event.id == open_bank_account.id
+        assert event.bank_account_id == open_bank_account.id
         assert event.amount == withdrawal_amount
       end)
 

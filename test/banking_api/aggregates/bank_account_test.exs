@@ -96,14 +96,14 @@ defmodule BankingApi.Aggregates.BankAccountTest do
       }
 
       command = %DepositMoney{
-        id: "acc-id-001",
+        bank_account_id: "acc-id-001",
         amount: 300
       }
 
       result = BankAccount.execute(aggregate, command)
 
       assert %MoneyDeposited{
-               id: "acc-id-001",
+               bank_account_id: "acc-id-001",
                amount: 300
              } = result
 
@@ -115,7 +115,7 @@ defmodule BankingApi.Aggregates.BankAccountTest do
       aggregate = %BankAccount{account_number: nil}
 
       command = %DepositMoney{
-        id: Ecto.UUID.generate(),
+        bank_account_id: Ecto.UUID.generate(),
         amount: 100
       }
 
@@ -134,7 +134,7 @@ defmodule BankingApi.Aggregates.BankAccountTest do
       }
 
       command = %DepositMoney{
-        id: "acc-id-002",
+        bank_account_id: "acc-id-002",
         amount: 500
       }
 
@@ -153,7 +153,7 @@ defmodule BankingApi.Aggregates.BankAccountTest do
       }
 
       command = %DepositMoney{
-        id: Ecto.UUID.generate(),
+        bank_account_id: Ecto.UUID.generate(),
         amount: 500
       }
 
@@ -174,14 +174,14 @@ defmodule BankingApi.Aggregates.BankAccountTest do
       }
 
       command = %WithdrawMoney{
-        id: "acc-id-003",
+        bank_account_id: "acc-id-003",
         amount: 300
       }
 
       result = BankAccount.execute(aggregate, command)
 
       assert %MoneyWithdrawn{
-               id: "acc-id-003",
+               bank_account_id: "acc-id-003",
                amount: 300
              } = result
 
@@ -198,14 +198,14 @@ defmodule BankingApi.Aggregates.BankAccountTest do
       }
 
       command = %WithdrawMoney{
-        id: "acc-id-004",
+        bank_account_id: "acc-id-004",
         amount: 500
       }
 
       result = BankAccount.execute(aggregate, command)
 
       assert %MoneyWithdrawn{
-               id: "acc-id-004",
+               bank_account_id: "acc-id-004",
                amount: 500
              } = result
 
@@ -222,7 +222,7 @@ defmodule BankingApi.Aggregates.BankAccountTest do
       }
 
       command = %WithdrawMoney{
-        id: "acc-id-005",
+        bank_account_id: "acc-id-005",
         amount: 150
       }
 
@@ -236,7 +236,7 @@ defmodule BankingApi.Aggregates.BankAccountTest do
       aggregate = %BankAccount{account_number: nil}
 
       command = %WithdrawMoney{
-        id: Ecto.UUID.generate(),
+        bank_account_id: Ecto.UUID.generate(),
         amount: 100
       }
 
@@ -255,7 +255,7 @@ defmodule BankingApi.Aggregates.BankAccountTest do
       }
 
       command = %WithdrawMoney{
-        id: "acc-id-006",
+        bank_account_id: "acc-id-006",
         amount: 100
       }
 
@@ -274,7 +274,7 @@ defmodule BankingApi.Aggregates.BankAccountTest do
       }
 
       command = %WithdrawMoney{
-        id: Ecto.UUID.generate(),
+        bank_account_id: Ecto.UUID.generate(),
         amount: 100
       }
 
@@ -316,7 +316,7 @@ defmodule BankingApi.Aggregates.BankAccountTest do
       }
 
       event = %MoneyDeposited{
-        id: "acc-id-011",
+        bank_account_id: "acc-id-011",
         amount: 300
       }
 
@@ -335,7 +335,7 @@ defmodule BankingApi.Aggregates.BankAccountTest do
       }
 
       event = %MoneyWithdrawn{
-        id: "acc-id-012",
+        bank_account_id: "acc-id-012",
         amount: 400
       }
 
@@ -377,11 +377,11 @@ defmodule BankingApi.Aggregates.BankAccountTest do
           status: "active"
         })
         |> BankAccount.apply(%MoneyDeposited{
-          id: "seq-id-001",
+          bank_account_id: "seq-id-001",
           amount: 500
         })
         |> BankAccount.apply(%MoneyWithdrawn{
-          id: "seq-id-001",
+          bank_account_id: "seq-id-001",
           amount: 300
         })
 

@@ -44,11 +44,11 @@ defmodule BankingApi.BankAccounts.Aggregates.BankAccount do
 
   @impl Aggregate
   def execute(
-        %BankAccount{account_number: account_number, status: current_status},
+        %BankAccount{id: bank_account_id, status: current_status},
         %UpdateBankAccountStatus{status: new_status}
       )
-      when not is_nil(account_number) and current_status != new_status do
-    %BankAccountStatusUpdated{account_number: account_number, status: new_status}
+      when not is_nil(bank_account_id) and current_status != new_status do
+    %BankAccountStatusUpdated{bank_account_id: bank_account_id, status: new_status}
   end
 
   @impl Aggregate
@@ -63,30 +63,30 @@ defmodule BankingApi.BankAccounts.Aggregates.BankAccount do
 
   @impl Aggregate
   def execute(
-        %BankAccount{status: "active", id: id},
+        %BankAccount{status: "active", id: bank_account_id},
         %DepositMoney{amount: amount}
       )
-      when not is_nil(id) do
-    money_deposited(id, amount)
+      when not is_nil(bank_account_id) do
+    money_deposited(bank_account_id, amount)
   end
 
   # Withdraw Money
 
   @impl Aggregate
   def execute(
-        %BankAccount{status: "active", id: id} = bank_account,
+        %BankAccount{status: "active", id: bank_account_id} = bank_account,
         %WithdrawMoney{amount: amount}
       )
-      when not is_nil(id) and amount <= bank_account.balance do
-    %MoneyWithdrawn{id: id, amount: amount, date: DateTime.utc_now()}
+      when not is_nil(bank_account_id) and amount <= bank_account.balance do
+    %MoneyWithdrawn{bank_account_id: bank_account_id, amount: amount, date: DateTime.utc_now()}
   end
 
   @impl Aggregate
   def execute(
-        %BankAccount{status: "active", id: id},
+        %BankAccount{status: "active", id: bank_account_id},
         %WithdrawMoney{}
       )
-      when not is_nil(id) do
+      when not is_nil(bank_account_id) do
     {:error, :insufficient_funds}
   end
 
@@ -152,9 +152,9 @@ defmodule BankingApi.BankAccounts.Aggregates.BankAccount do
     %BankAccount{account | status: status}
   end
 
-  defp money_deposited(id, amount) do
+  defp money_deposited(bank_account_id, amount) do
     %MoneyDeposited{
-      id: id,
+      bank_account_id: bank_account_id,
       amount: amount,
       date: DateTime.utc_now()
     }

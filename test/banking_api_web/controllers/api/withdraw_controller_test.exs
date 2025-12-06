@@ -7,7 +7,7 @@ defmodule BankingApiWeb.Api.WithdrawControllerTest do
       bank_account = setup_bank_account(balance: 200)
 
       params = %{
-        "id" => bank_account.id,
+        "bank_account_id" => bank_account.id,
         "amount" => 100
       }
 
@@ -26,7 +26,7 @@ defmodule BankingApiWeb.Api.WithdrawControllerTest do
       bank_account = setup_bank_account(balance: 50)
 
       params = %{
-        "id" => bank_account.id,
+        "bank_account_id" => bank_account.id,
         "amount" => 100
       }
 
@@ -37,33 +37,33 @@ defmodule BankingApiWeb.Api.WithdrawControllerTest do
 
     @tag :web
     test "error: returns error when id is empty", %{conn: conn} do
-      invalid_params = %{"id" => nil, "amount" => 100}
+      invalid_params = %{"bank_account_id" => nil, "amount" => 100}
 
       conn = post(conn, ~p"/api/bank_account/withdraw", invalid_params)
 
       assert json_response(conn, 400) == %{
                "error" => %{
-                 "id" => ["can't be empty", "must be valid"]
+                 "bank_account_id" => ["can't be empty", "must be valid"]
                }
              }
     end
 
     @tag :web
     test "error: returns error when id is a invalid UUID", %{conn: conn} do
-      invalid_params = %{"id" => "invalid_uuid", "amount" => 100}
+      invalid_params = %{"bank_account_id" => "invalid_uuid", "amount" => 100}
 
       conn = post(conn, ~p"/api/bank_account/withdraw", invalid_params)
 
       assert json_response(conn, 400) == %{
                "error" => %{
-                 "id" => ["must be valid"]
+                 "bank_account_id" => ["must be valid"]
                }
              }
     end
 
     @tag :web
     test "error: returns error when amount is empty", %{conn: conn} do
-      invalid_params = %{"id" => Ecto.UUID.generate(), "amount" => nil}
+      invalid_params = %{"bank_account_id" => Ecto.UUID.generate(), "amount" => nil}
 
       conn = post(conn, ~p"/api/bank_account/withdraw", invalid_params)
 
@@ -76,7 +76,7 @@ defmodule BankingApiWeb.Api.WithdrawControllerTest do
 
     @tag :web
     test "error: returns error when the given amount is not a number", %{conn: conn} do
-      invalid_params = %{"id" => Ecto.UUID.generate(), "amount" => "100"}
+      invalid_params = %{"bank_account_id" => Ecto.UUID.generate(), "amount" => "100"}
 
       conn = post(conn, ~p"/api/bank_account/withdraw", invalid_params)
 
@@ -89,7 +89,7 @@ defmodule BankingApiWeb.Api.WithdrawControllerTest do
 
     @tag :web
     test "error: returns error when the given amount is negative", %{conn: conn} do
-      invalid_params = %{"id" => Ecto.UUID.generate(), "amount" => -1}
+      invalid_params = %{"bank_account_id" => Ecto.UUID.generate(), "amount" => -1}
 
       conn = post(conn, ~p"/api/bank_account/withdraw", invalid_params)
 
@@ -103,7 +103,7 @@ defmodule BankingApiWeb.Api.WithdrawControllerTest do
     @tag :web
     test "error: returns error when account with the id is not found", %{conn: conn} do
       params = %{
-        "id" => Ecto.UUID.generate(),
+        "bank_account_id" => Ecto.UUID.generate(),
         "amount" => 100
       }
 
@@ -117,7 +117,7 @@ defmodule BankingApiWeb.Api.WithdrawControllerTest do
       bank_account = setup_closed_bank_account()
 
       params = %{
-        "id" => bank_account.id,
+        "bank_account_id" => bank_account.id,
         "amount" => 50
       }
 

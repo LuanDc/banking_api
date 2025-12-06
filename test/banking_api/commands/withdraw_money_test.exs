@@ -7,7 +7,7 @@ defmodule BankingApi.BankAccounts.Commands.WithdrawMoneyTest do
 
   @tag :unit
   test "success: passes valid command through the pipeline" do
-    attrs = %{"id" => Ecto.UUID.generate(), "amount" => 50}
+    attrs = %{"bank_account_id" => Ecto.UUID.generate(), "amount" => 50}
 
     command = WithdrawMoney.new(attrs)
 
@@ -27,25 +27,25 @@ defmodule BankingApi.BankAccounts.Commands.WithdrawMoneyTest do
     assert {:error, :validation_failure, errors} = result.response
 
     assert errors == %{
-             id: ["can't be empty", "must be valid"],
+             bank_account_id: ["can't be empty", "must be valid"],
              amount: ["can't be empty", "must be a number greater than or equal to 0"]
            }
   end
 
   @tag :unit
   test "error: halts pipeline and returns validation errors for command with invalid id type" do
-    invalid_params = %{"id" => 1, "amount" => 50}
+    invalid_params = %{"bank_account_id" => 1, "amount" => 50}
     command = WithdrawMoney.new(invalid_params)
 
     result = validate(command)
 
     assert {:error, :validation_failure, errors} = result.response
-    assert errors[:id] == ["must be valid"]
+    assert errors[:bank_account_id] == ["must be valid"]
   end
 
   @tag :unit
   test "error: halts pipeline and returns validation errors for negative amount" do
-    invalid_params = %{"id" => Ecto.UUID.generate(), "amount" => -10}
+    invalid_params = %{"bank_account_id" => Ecto.UUID.generate(), "amount" => -10}
     command = WithdrawMoney.new(invalid_params)
 
     result = validate(command)
@@ -56,23 +56,23 @@ defmodule BankingApi.BankAccounts.Commands.WithdrawMoneyTest do
 
   @tag :unit
   test "error: halts pipeline and returns validation errors for invalid UUID" do
-    invalid_params = %{"id" => "invalid-uuid", "amount" => 50}
+    invalid_params = %{"bank_account_id" => "invalid-uuid", "amount" => 50}
     command = WithdrawMoney.new(invalid_params)
 
     result = validate(command)
 
     assert {:error, :validation_failure, errors} = result.response
-    assert errors[:id] == ["must be valid"]
+    assert errors[:bank_account_id] == ["must be valid"]
   end
 
   @tag :unit
   test "error: halts pipeline and returns validation errors for nil id" do
-    invalid_params = %{"id" => nil, "amount" => 50}
+    invalid_params = %{"bank_account_id" => nil, "amount" => 50}
     command = WithdrawMoney.new(invalid_params)
 
     result = validate(command)
 
     assert {:error, :validation_failure, errors} = result.response
-    assert errors[:id] == ["can't be empty", "must be valid"]
+    assert errors[:bank_account_id] == ["can't be empty", "must be valid"]
   end
 end

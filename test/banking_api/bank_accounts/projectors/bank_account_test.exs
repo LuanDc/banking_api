@@ -76,7 +76,7 @@ defmodule BankingApi.BankAccounts.Projectors.BankAccountTest do
       bank_account_id = "123e4567-e89b-12d3-a456-426614174003"
 
       event = %MoneyDeposited{
-        id: bank_account_id,
+        bank_account_id: bank_account_id,
         amount: 500
       }
 
@@ -94,7 +94,7 @@ defmodule BankingApi.BankAccounts.Projectors.BankAccountTest do
       bank_account_id = "123e4567-e89b-12d3-a456-426614174004"
 
       event = %MoneyDeposited{
-        id: bank_account_id,
+        bank_account_id: bank_account_id,
         amount: 1500
       }
 
@@ -114,7 +114,7 @@ defmodule BankingApi.BankAccounts.Projectors.BankAccountTest do
       bank_account_id = "123e4567-e89b-12d3-a456-426614174005"
 
       event = %MoneyWithdrawn{
-        id: bank_account_id,
+        bank_account_id: bank_account_id,
         amount: 300
       }
 
@@ -132,7 +132,7 @@ defmodule BankingApi.BankAccounts.Projectors.BankAccountTest do
       bank_account_id = "123e4567-e89b-12d3-a456-426614174006"
 
       event = %MoneyWithdrawn{
-        id: bank_account_id,
+        bank_account_id: bank_account_id,
         amount: 750
       }
 
@@ -168,7 +168,7 @@ defmodule BankingApi.BankAccounts.Projectors.BankAccountTest do
     @tag :unit
     test "creates update operation to change status to active" do
       event = %BankAccountStatusUpdated{
-        account_number: "ACC-008",
+        bank_account_id: "123e4567-e89b-12d3-a456-426614174008",
         status: "active"
       }
 
@@ -184,7 +184,7 @@ defmodule BankingApi.BankAccounts.Projectors.BankAccountTest do
     @tag :unit
     test "creates update operation to change status to inactive" do
       event = %BankAccountStatusUpdated{
-        account_number: "ACC-009",
+        bank_account_id: "123e4567-e89b-12d3-a456-426614174009",
         status: "inactive"
       }
 
@@ -200,7 +200,7 @@ defmodule BankingApi.BankAccounts.Projectors.BankAccountTest do
     @tag :unit
     test "converts status string to atom" do
       event = %BankAccountStatusUpdated{
-        account_number: "ACC-010",
+        bank_account_id: "123e4567-e89b-12d3-a456-426614174010",
         status: "active"
       }
 

@@ -1,4 +1,4 @@
 defmodule BankingApi.BankAccounts.Events.MoneyDeposited do
   @derive Jason.Encoder
-  defstruct [:id, :amount, :date]
+  defstruct [:bank_account_id, :amount, :date]
 end

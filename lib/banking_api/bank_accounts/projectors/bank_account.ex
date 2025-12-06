@@ -75,20 +75,20 @@ defmodule BankingApi.BankAccounts.Projectors.BankAccount do
   end
 
   def project_money_deposited(multi, %MoneyDeposited{
-        id: id,
+        bank_account_id: bank_account_id,
         amount: amount,
         date: date
       }) do
     multi
-    |> update_bank_account(bank_account_query(id),
+    |> update_bank_account(bank_account_query(bank_account_id),
       inc: [balance: amount]
     )
     |> Ecto.Multi.run(:transaction, fn repo, _changes ->
-      bank_account = repo.get(BankAccount, id)
+      bank_account = repo.get(BankAccount, bank_account_id)
 
       transaction = %Transaction{
         id: Ecto.UUID.generate(),
-        bank_account_id: id,
+        bank_account_id: bank_account_id,
         account_number: bank_account.account_number,
         type: "deposit",
         amount: amount,
@@ -100,20 +100,20 @@ defmodule BankingApi.BankAccounts.Projectors.BankAccount do
   end
 
   def project_money_withdrawn(multi, %MoneyWithdrawn{
-        id: id,
+        bank_account_id: bank_account_id,
         amount: amount,
         date: date
       }) do
     multi
-    |> update_bank_account(bank_account_query(id),
+    |> update_bank_account(bank_account_query(bank_account_id),
       inc: [balance: -amount]
     )
     |> Ecto.Multi.run(:transaction, fn repo, _changes ->
-      bank_account = repo.get(BankAccount, id)
+      bank_account = repo.get(BankAccount, bank_account_id)
 
       transaction = %Transaction{
         id: Ecto.UUID.generate(),
-        bank_account_id: id,
+        bank_account_id: bank_account_id,
         account_number: bank_account.account_number,
         type: "withdrawal",
         amount: amount,
@@ -134,10 +134,10 @@ defmodule BankingApi.BankAccounts.Projectors.BankAccount do
   end
 
   def project_bank_account_status_updated(multi, %BankAccountStatusUpdated{
-        account_number: account_number,
+        bank_account_id: bank_account_id,
         status: status
       }) do
-    update_bank_account(multi, bank_account_query(account_number: account_number),
+    update_bank_account(multi, bank_account_query(bank_account_id),
       set: [status: String.to_existing_atom(status)]
     )
   end

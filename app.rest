@@ -21,7 +21,7 @@ POST http://localhost:4000/api/bank_account/status
 content-type: application/json
 
 {
-    "id": "c0fa7172-4b8a-4836-9b18-1e2db3656448",
+    "bank_account_id": "c0fa7172-4b8a-4836-9b18-1e2db3656448",
     "status": "active"
 }
 
@@ -31,7 +31,7 @@ POST http://localhost:4000/api/bank_account/deposit
 content-type: application/json
 
 {
-    "id": "c0fa7172-4b8a-4836-9b18-1e2db3656448",
+    "bank_account_id": "c0fa7172-4b8a-4836-9b18-1e2db3656448",
     "amount": 200
 }
 
@@ -41,6 +41,6 @@ POST http://localhost:4000/api/bank_account/withdraw
 content-type: application/json
 
 {
-    "id": "c0fa7172-4b8a-4836-9b18-1e2db3656448",
+    "bank_account_id": "c0fa7172-4b8a-4836-9b18-1e2db3656448",
     "amount": 100
 }

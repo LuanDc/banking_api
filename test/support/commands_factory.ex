@@ -20,7 +20,7 @@ defmodule BankingApi.CommandsFactory do
 
   def build_command(%DepositMoney{}, opts) do
     %DepositMoney{
-      id: Keyword.get(opts, :id, Ecto.UUID.generate()),
+      bank_account_id: Keyword.get(opts, :bank_account_id, Ecto.UUID.generate()),
       amount: Keyword.get(opts, :amount, 100)
     }
     |> Map.merge(Map.new(opts))
@@ -28,7 +28,7 @@ defmodule BankingApi.CommandsFactory do
 
   def build_command(%WithdrawMoney{}, opts) do
     %WithdrawMoney{
-      id: Keyword.get(opts, :id, Ecto.UUID.generate()),
+      bank_account_id: Keyword.get(opts, :bank_account_id, Ecto.UUID.generate()),
       amount: Keyword.get(opts, :amount, 50)
     }
     |> Map.merge(Map.new(opts))
@@ -36,7 +36,7 @@ defmodule BankingApi.CommandsFactory do
 
   def build_command(%UpdateBankAccountStatus{}, opts) do
     %UpdateBankAccountStatus{
-      id: Keyword.get(opts, :id, Ecto.UUID.generate()),
+      bank_account_id: Keyword.get(opts, :bank_account_id, Ecto.UUID.generate()),
       status: Keyword.get(opts, :status, "inactive")
     }
     |> Map.merge(Map.new(opts))

@@ -1,9 +1,9 @@
 defmodule BankingApi.BankAccounts.Commands.WithdrawMoney do
-  defstruct [:id, :amount]
+  defstruct [:bank_account_id, :amount]
   use ExConstructor
   use Vex.Struct
 
-  validates(:id,
+  validates(:bank_account_id,
     presence: [message: "can't be empty"],
     uuid: true
   )

@@ -109,16 +109,16 @@ defmodule BankingApi.EventStoreHelper do
 
   ## Options
 
-    * `:id` - Bank account ID (required)
+    * `:bank_account_id` - Bank account ID (required)
     * `:amount` - Amount to deposit (required)
 
   ## Examples
 
-      money_deposited(id: "123", amount: 500)
+      money_deposited(bank_account_id: "123", amount: 500)
   """
   def money_deposited(opts) do
     %MoneyDeposited{
-      id: Keyword.fetch!(opts, :id),
+      bank_account_id: Keyword.fetch!(opts, :bank_account_id),
       amount: Keyword.fetch!(opts, :amount),
       date: Keyword.get(opts, :date, DateTime.utc_now())
     }
@@ -129,16 +129,16 @@ defmodule BankingApi.EventStoreHelper do
 
   ## Options
 
-    * `:id` - Bank account ID (required)
+    * `:bank_account_id` - Bank account ID (required)
     * `:amount` - Amount to withdraw (required)
 
   ## Examples
 
-      money_withdrawn(id: "123", amount: 200)
+      money_withdrawn(bank_account_id: "123", amount: 200)
   """
   def money_withdrawn(opts) do
     %MoneyWithdrawn{
-      id: Keyword.fetch!(opts, :id),
+      bank_account_id: Keyword.fetch!(opts, :bank_account_id),
       amount: Keyword.fetch!(opts, :amount),
       date: Keyword.get(opts, :date, DateTime.utc_now())
     }
@@ -233,8 +233,8 @@ defmodule BankingApi.EventStoreHelper do
 
     transaction_events =
       Enum.map(transactions, fn
-        {:deposit, amount} -> money_deposited(id: opened_event.id, amount: amount)
-        {:withdraw, amount} -> money_withdrawn(id: opened_event.id, amount: amount)
+        {:deposit, amount} -> money_deposited(bank_account_id: opened_event.id, amount: amount)
+        {:withdraw, amount} -> money_withdrawn(bank_account_id: opened_event.id, amount: amount)
       end)
 
     all_events = [opened_event | transaction_events]

@@ -12,7 +12,7 @@ defmodule BankingApi.Router do
 
   middleware(Validate)
 
-  identify(BankAccount, prefix: "bank-account-", by: :id)
+  identify(BankAccount, prefix: "bank-account-", by: &__MODULE__.identity/1)
 
   dispatch(
     [
@@ -23,4 +23,9 @@ defmodule BankingApi.Router do
     ],
     to: BankAccount
   )
+
+  def identity(%OpenBankAccount{id: id}), do: id
+  def identity(%DepositMoney{bank_account_id: id}), do: id
+  def identity(%WithdrawMoney{bank_account_id: id}), do: id
+  def identity(%UpdateBankAccountStatus{bank_account_id: id}), do: id
 end

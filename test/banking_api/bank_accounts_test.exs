@@ -38,7 +38,7 @@ defmodule BankingApi.BankAccountsTest do
     test "read model is updated with new balance" do
       bank_account = setup_bank_account(balance: 0)
 
-      params = %{"id" => bank_account.id, "amount" => 50}
+      params = %{"bank_account_id" => bank_account.id, "amount" => 50}
 
       assert {:ok, updated_account} = BankAccounts.deposit(params)
 
@@ -51,7 +51,7 @@ defmodule BankingApi.BankAccountsTest do
     test "read model is updated with new balance" do
       bank_account = setup_bank_account(balance: 100)
 
-      params = %{"id" => bank_account.id, "amount" => 50}
+      params = %{"bank_account_id" => bank_account.id, "amount" => 50}
 
       assert {:ok, updated_account} = BankAccounts.withdraw(params)
 
@@ -64,7 +64,7 @@ defmodule BankingApi.BankAccountsTest do
     test "returns transactions for account" do
       bank_account = setup_bank_account(balance: 0)
 
-      params = %{"id" => bank_account.id, "amount" => 100}
+      params = %{"bank_account_id" => bank_account.id, "amount" => 100}
       assert {:ok, _} = BankAccounts.deposit(params)
 
       transactions = BankAccounts.list_transactions(bank_account.id)
