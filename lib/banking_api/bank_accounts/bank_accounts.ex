@@ -5,7 +5,9 @@ defmodule BankingApi.BankAccounts do
   alias BankingApi.BankAccounts.Commands.WithdrawMoney
   alias BankingApi.BankAccounts.Commands.UpdateBankAccountStatus
   alias BankingApi.BankAccounts.Projections.BankAccount
+  alias BankingApi.BankAccounts.Projections.Transaction
   alias BankingApi.Repo
+  import Ecto.Query
 
   # Reader functions
 
@@ -25,6 +27,26 @@ defmodule BankingApi.BankAccounts do
 
   def get_by!(filters) when is_list(filters) do
     Repo.get_by!(BankAccount, filters)
+  end
+
+  def list_transactions(account_number, start_date \\ nil, end_date \\ nil) do
+    query = from t in Transaction,
+      where: t.account_number == ^account_number,
+      order_by: [desc: t.date]
+
+    query = if start_date do
+      from t in query, where: t.date >= ^start_date
+    else
+      query
+    end
+
+    query = if end_date do
+      from t in query, where: t.date <= ^end_date
+    else
+      query
+    end
+
+    Repo.all(query)
   end
 
   # Writer functions

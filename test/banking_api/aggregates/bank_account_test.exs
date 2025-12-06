@@ -30,12 +30,14 @@ defmodule BankingApi.Aggregates.BankAccountTest do
 
       result = BankAccount.execute(aggregate, command)
 
-      assert result == %BankAccountOpened{
+      assert %BankAccountOpened{
                id: "550e8400-e29b-41d4-a716-446655440000",
                account_number: "ACC-001",
                initial_balance: 1000,
                status: "active"
-             }
+             } = result
+
+      assert result.date != nil
     end
 
     @tag :unit
@@ -51,12 +53,14 @@ defmodule BankingApi.Aggregates.BankAccountTest do
 
       result = BankAccount.execute(aggregate, command)
 
-      assert result == %BankAccountOpened{
+      assert %BankAccountOpened{
                id: "550e8400-e29b-41d4-a716-446655440001",
                account_number: "ACC-002",
                initial_balance: 0,
                status: "active"
-             }
+             } = result
+
+      assert result.date != nil
     end
 
     @tag :unit
@@ -98,10 +102,12 @@ defmodule BankingApi.Aggregates.BankAccountTest do
 
       result = BankAccount.execute(aggregate, command)
 
-      assert result == %MoneyDeposited{
+      assert %MoneyDeposited{
                account_number: "ACC-001",
                amount: 300
-             }
+             } = result
+
+      assert result.date != nil
     end
 
     @tag :unit
@@ -155,10 +161,12 @@ defmodule BankingApi.Aggregates.BankAccountTest do
 
       result = BankAccount.execute(aggregate, command)
 
-      assert result == %MoneyWithdrawn{
+      assert %MoneyWithdrawn{
                account_number: "ACC-003",
                amount: 300
-             }
+             } = result
+
+      assert result.date != nil
     end
 
     @tag :unit
@@ -177,10 +185,12 @@ defmodule BankingApi.Aggregates.BankAccountTest do
 
       result = BankAccount.execute(aggregate, command)
 
-      assert result == %MoneyWithdrawn{
+      assert %MoneyWithdrawn{
                account_number: "ACC-004",
                amount: 500
-             }
+             } = result
+
+      assert result.date != nil
     end
 
     @tag :unit

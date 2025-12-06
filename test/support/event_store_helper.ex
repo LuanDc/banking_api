@@ -99,7 +99,8 @@ defmodule BankingApi.EventStoreHelper do
       id: Keyword.get(opts, :id, Ecto.UUID.generate()),
       account_number: Keyword.get(opts, :account_number, "0001-01"),
       initial_balance: Keyword.get(opts, :initial_balance, 0),
-      status: Keyword.get(opts, :status, "active")
+      status: Keyword.get(opts, :status, "active"),
+      date: Keyword.get(opts, :date, DateTime.utc_now())
     }
   end
 
@@ -118,7 +119,8 @@ defmodule BankingApi.EventStoreHelper do
   def money_deposited(opts) do
     %MoneyDeposited{
       account_number: Keyword.fetch!(opts, :account_number),
-      amount: Keyword.fetch!(opts, :amount)
+      amount: Keyword.fetch!(opts, :amount),
+      date: Keyword.get(opts, :date, DateTime.utc_now())
     }
   end
 
@@ -137,7 +139,8 @@ defmodule BankingApi.EventStoreHelper do
   def money_withdrawn(opts) do
     %MoneyWithdrawn{
       account_number: Keyword.fetch!(opts, :account_number),
-      amount: Keyword.fetch!(opts, :amount)
+      amount: Keyword.fetch!(opts, :amount),
+      date: Keyword.get(opts, :date, DateTime.utc_now())
     }
   end
 

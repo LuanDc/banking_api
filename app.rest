@@ -41,3 +41,19 @@ content-type: application/json
     "account_number": "A123456",
     "amount": 1
 }
+
+###
+
+GET http://localhost:4000/api/bank_account/A123456/transactions
+
+###
+
+GET http://localhost:4000/api/bank_account/A123456/transactions?start_date=2025-12-01T00:00:00Z
+
+###
+
+GET http://localhost:4000/api/bank_account/A123456/transactions?end_date=2025-12-31T23:59:59Z
+
+###
+
+GET http://localhost:4000/api/bank_account/A123456/transactions?start_date=2025-12-01T00:00:00Z&end_date=2025-12-31T23:59:59Z

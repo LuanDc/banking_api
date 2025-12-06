@@ -18,6 +18,7 @@ defmodule BankingApiWeb.Router do
     pipe_through :api
 
     get "/bank_account/:id", BankAccountController, :get
+    get "/bank_account/:account_number/transactions", BankAccountController, :list_transactions
 
     post "/bank_account/open", OpenBankAccountController, :create
     post "/bank_account/status", UpdateBankAccountStatusController, :create

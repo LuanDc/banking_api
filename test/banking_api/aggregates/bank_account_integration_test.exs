@@ -20,7 +20,7 @@ defmodule BankingApi.Aggregates.BankAccountIntegrationTest do
 
   alias Commanded.Aggregates.Aggregate
 
-  describe "Commanded Integration - OpenBankAccount" do
+  describe "OpenBankAccount" do
     @tag :integration
     test "dispatches command, publishes event, and persists to event store" do
       open_bank_account = build_command(%OpenBankAccount{})
@@ -28,12 +28,16 @@ defmodule BankingApi.Aggregates.BankAccountIntegrationTest do
       assert BankingApiApp.dispatch(open_bank_account) == :ok
 
       wait_for_event(BankingApiApp, BankAccountOpened, fn event ->
-        assert event == %BankAccountOpened{
-                 account_number: open_bank_account.account_number,
-                 id: open_bank_account.id,
+        assert %BankAccountOpened{
+                 account_number: account_number,
+                 id: id,
                  status: "active",
                  initial_balance: 0
-               }
+               } = event
+
+        assert account_number == open_bank_account.account_number
+        assert id == open_bank_account.id
+        assert event.date != nil
       end)
 
       assert Aggregate.aggregate_state(
@@ -50,7 +54,7 @@ defmodule BankingApi.Aggregates.BankAccountIntegrationTest do
     end
   end
 
-  describe "Commanded Integration - DepositMoney" do
+  describe "DepositMoney" do
     @tag :integration
     test "dispatches deposit command and updates aggregate state" do
       open_bank_account = build_command(%OpenBankAccount{})
@@ -82,7 +86,7 @@ defmodule BankingApi.Aggregates.BankAccountIntegrationTest do
     end
   end
 
-  describe "Commanded Integration - WithdrawMoney" do
+  describe "WithdrawMoney" do
     @tag :integration
     test "dispatches withdrawal command and updates aggregate state" do
       initial_balance = 200
