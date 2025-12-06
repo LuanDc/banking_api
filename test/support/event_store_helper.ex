@@ -94,10 +94,10 @@ defmodule BankingApi.EventStoreHelper do
 
       bank_account_opened(account_number: "123", initial_balance: 1000)
   """
-  def bank_account_opened(opts) do
+  def bank_account_opened(opts \\ []) do
     %BankAccountOpened{
       id: Keyword.get(opts, :id, Ecto.UUID.generate()),
-      account_number: Keyword.fetch!(opts, :account_number),
+      account_number: Keyword.get(opts, :account_number, "0001-01"),
       initial_balance: Keyword.get(opts, :initial_balance, 0),
       status: Keyword.get(opts, :status, "active")
     }
@@ -160,6 +160,21 @@ defmodule BankingApi.EventStoreHelper do
     }
   end
 
+  def setup_bank_account() do
+    event = bank_account_opened()
+
+    stream_id = "bank-account-#{event.id}"
+
+    events = [event]
+
+    append_events(stream_id, events)
+
+    # Give time for projections to process
+    Process.sleep(50)
+
+    BankingApi.Repo.get!(BankingApi.BankAccounts.Projections.BankAccount, event.id)
+  end
+
   @doc """
   Convenience function to setup a bank account with initial balance.
 
@@ -179,21 +194,19 @@ defmodule BankingApi.EventStoreHelper do
       setup_bank_account("account-123")
   """
   def setup_bank_account(account_number, balance \\ 0) do
-    stream_id = "bank-account-#{account_number}"
+    event = bank_account_opened(
+      account_number: account_number,
+      initial_balance: balance
+    )
 
-    events = [
-      bank_account_opened(
-        account_number: account_number,
-        initial_balance: balance
-      )
-    ]
+    stream_id = "bank-account-#{event.id}"
 
-    append_events(stream_id, events)
+    append_events(stream_id, [event])
 
     # Give time for projections to process
     Process.sleep(50)
 
-    account_number
+    BankingApi.Repo.get!(BankingApi.BankAccounts.Projections.BankAccount, event.id)
   end
 
   @doc """
@@ -215,12 +228,13 @@ defmodule BankingApi.EventStoreHelper do
       ])
   """
   def setup_bank_account_with_history(account_number, initial_balance, transactions) do
-    stream_id = "bank-account-#{account_number}"
+    opened_event =
+      bank_account_opened(
+        account_number: account_number,
+        initial_balance: initial_balance
+      )
 
-    opened_event = bank_account_opened(
-      account_number: account_number,
-      initial_balance: initial_balance
-    )
+    stream_id = "bank-account-#{opened_event.id}"
 
     transaction_events =
       Enum.map(transactions, fn
@@ -251,13 +265,15 @@ defmodule BankingApi.EventStoreHelper do
       setup_closed_bank_account("account-123", 0)
   """
   def setup_closed_bank_account(account_number, final_balance \\ 0) do
-    stream_id = "bank-account-#{account_number}"
+    event = bank_account_opened(
+      account_number: account_number,
+      initial_balance: final_balance
+    )
+
+    stream_id = "bank-account-#{event.id}"
 
     events = [
-      bank_account_opened(
-        account_number: account_number,
-        initial_balance: final_balance
-      ),
+      event,
       bank_account_closed(account_number: account_number)
     ]
 
@@ -266,7 +282,7 @@ defmodule BankingApi.EventStoreHelper do
     # Give time for projections to process
     Process.sleep(50)
 
-    account_number
+    BankingApi.Repo.get!(BankingApi.BankAccounts.Projections.BankAccount, event.id)
   end
 
   # Private helpers
@@ -275,10 +291,11 @@ defmodule BankingApi.EventStoreHelper do
     %EventStore.EventData{
       event_type: Atom.to_string(event.__struct__),
       data: event,
-      metadata: Map.merge(metadata, %{
-        causation_id: Ecto.UUID.generate(),
-        correlation_id: Ecto.UUID.generate()
-      })
+      metadata:
+        Map.merge(metadata, %{
+          causation_id: Ecto.UUID.generate(),
+          correlation_id: Ecto.UUID.generate()
+        })
     }
   end
 end

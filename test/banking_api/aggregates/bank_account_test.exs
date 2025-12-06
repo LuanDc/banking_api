@@ -96,7 +96,7 @@ defmodule BankingApi.Aggregates.BankAccountTest do
       }
 
       command = %DepositMoney{
-        account_number: "ACC-001",
+        id: "acc-id-001",
         amount: 300
       }
 
@@ -113,7 +113,7 @@ defmodule BankingApi.Aggregates.BankAccountTest do
       aggregate = %BankAccount{account_number: nil}
 
       command = %DepositMoney{
-        account_number: "ACC-999",
+        id: Ecto.UUID.generate(),
         amount: 100
       }
 
@@ -132,7 +132,7 @@ defmodule BankingApi.Aggregates.BankAccountTest do
       }
 
       command = %DepositMoney{
-        account_number: "ACC-002",
+        id: "acc-id-002",
         amount: 500
       }
 
@@ -153,7 +153,7 @@ defmodule BankingApi.Aggregates.BankAccountTest do
       }
 
       command = %WithdrawMoney{
-        account_number: "ACC-003",
+        id: "acc-id-003",
         amount: 300
       }
 
@@ -175,7 +175,7 @@ defmodule BankingApi.Aggregates.BankAccountTest do
       }
 
       command = %WithdrawMoney{
-        account_number: "ACC-004",
+        id: "acc-id-004",
         amount: 500
       }
 
@@ -197,7 +197,7 @@ defmodule BankingApi.Aggregates.BankAccountTest do
       }
 
       command = %WithdrawMoney{
-        account_number: "ACC-005",
+        id: "acc-id-005",
         amount: 150
       }
 
@@ -211,7 +211,7 @@ defmodule BankingApi.Aggregates.BankAccountTest do
       aggregate = %BankAccount{account_number: nil}
 
       command = %WithdrawMoney{
-        account_number: "ACC-999",
+        id: Ecto.UUID.generate(),
         amount: 100
       }
 
@@ -230,7 +230,7 @@ defmodule BankingApi.Aggregates.BankAccountTest do
       }
 
       command = %WithdrawMoney{
-        account_number: "ACC-006",
+        id: "acc-id-006",
         amount: 100
       }
 
@@ -251,7 +251,7 @@ defmodule BankingApi.Aggregates.BankAccountTest do
       }
 
       command = %CloseBankAccount{
-        account_number: "ACC-007"
+        id: "acc-id-007"
       }
 
       result = BankAccount.execute(aggregate, command)
@@ -272,7 +272,7 @@ defmodule BankingApi.Aggregates.BankAccountTest do
       }
 
       command = %CloseBankAccount{
-        account_number: "ACC-008"
+        id: "acc-id-008"
       }
 
       result = BankAccount.execute(aggregate, command)
@@ -288,7 +288,7 @@ defmodule BankingApi.Aggregates.BankAccountTest do
       aggregate = %BankAccount{account_number: nil}
 
       command = %CloseBankAccount{
-        account_number: "ACC-999"
+        id: Ecto.UUID.generate()
       }
 
       result = BankAccount.execute(aggregate, command)
@@ -306,7 +306,7 @@ defmodule BankingApi.Aggregates.BankAccountTest do
       }
 
       command = %CloseBankAccount{
-        account_number: "ACC-009"
+        id: "acc-id-009"
       }
 
       result = BankAccount.execute(aggregate, command)

@@ -45,24 +45,26 @@ defmodule BankingApi.BankAccounts do
 
   def deposit(params) do
     with :ok <- BankingApiApp.dispatch(DepositMoney.new(params), consistency: :strong) do
-      get_by(account_number: params["account_number"])
+      get(params["id"])
     end
   end
 
   def withdraw(params) do
     with :ok <- BankingApiApp.dispatch(WithdrawMoney.new(params), consistency: :strong) do
-      get_by(account_number: params["account_number"])
+      get(params["id"])
     end
   end
 
   def close_bank_account(params) do
-    BankingApiApp.dispatch(CloseBankAccount.new(params), consistency: :strong)
+    with :ok <- BankingApiApp.dispatch(CloseBankAccount.new(params), consistency: :strong) do
+      get(params["id"])
+    end
   end
 
   def update_bank_account_status(params) do
     with :ok <-
            BankingApiApp.dispatch(UpdateBankAccountStatus.new(params), consistency: :strong) do
-      get_by(account_number: params["account_number"])
+      get(params["id"])
     end
   end
 end

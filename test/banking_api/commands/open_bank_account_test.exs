@@ -7,8 +7,6 @@ defmodule BankingApi.BankAccounts.Commands.OpenBankAccountTest do
 
   @tag :unit
   test "success: passes valid command through the pipeline" do
-    id = "1f430bb5-81fc-4de3-8c8f-e3fc00adf896"
-
     attrs = %{
       "account_number" => "ACC-1",
       "initial_balance" => 100,
@@ -18,7 +16,7 @@ defmodule BankingApi.BankAccounts.Commands.OpenBankAccountTest do
     command =
       attrs
       |> OpenBankAccount.new()
-      |> OpenBankAccount.assign_id(id)
+      |> OpenBankAccount.assign_id(Ecto.UUID.generate())
 
     result = validate(command)
 

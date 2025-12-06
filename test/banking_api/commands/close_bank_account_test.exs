@@ -7,7 +7,7 @@ defmodule BankingApi.BankAccounts.Commands.CloseBankAccountTest do
 
   @tag :unit
   test "success: passes valid command through the pipeline" do
-    attrs = %{"account_number" => "ACC-1"}
+    attrs = %{"id" => Ecto.UUID.generate()}
 
     command = CloseBankAccount.new(attrs)
 
@@ -25,17 +25,17 @@ defmodule BankingApi.BankAccounts.Commands.CloseBankAccountTest do
     result = validate(command)
 
     assert {:error, :validation_failure, errors} = result.response
-    assert errors == %{account_number: ["can't be empty"]}
+    assert errors == %{id: ["can't be empty", "must be valid"]}
   end
 
   @tag :unit
-  test "error: halts pipeline and returns validation errors for command with invalid account number type" do
-    invalid_params = %{"account_number" => 1}
+  test "error: halts pipeline and returns validation errors for command with invalid id type" do
+    invalid_params = %{"id" => 1}
     command = CloseBankAccount.new(invalid_params)
 
     result = validate(command)
 
     assert {:error, :validation_failure, errors} = result.response
-    assert errors[:account_number] == ["is not a valid string"]
+    assert errors[:id] == ["must be valid"]
   end
 end

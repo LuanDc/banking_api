@@ -42,9 +42,7 @@ defmodule BankingApi.BankAccounts.Aggregates.BankAccount do
   # Close Bank Account
 
   @impl Aggregate
-  def execute(%BankAccount{account_number: account_number, status: "active"}, %CloseBankAccount{
-        account_number: account_number
-      })
+  def execute(%BankAccount{account_number: account_number, status: "active"}, %CloseBankAccount{})
       when not is_nil(account_number) do
     %BankAccountClosed{account_number: account_number, status: "inactive"}
   end
@@ -54,7 +52,7 @@ defmodule BankingApi.BankAccounts.Aggregates.BankAccount do
   @impl Aggregate
   def execute(
         %BankAccount{account_number: account_number, status: current_status},
-        %UpdateBankAccountStatus{account_number: account_number, status: new_status}
+        %UpdateBankAccountStatus{status: new_status}
       )
       when not is_nil(account_number) and current_status != new_status do
     %BankAccountStatusUpdated{account_number: account_number, status: new_status}
@@ -72,11 +70,8 @@ defmodule BankingApi.BankAccounts.Aggregates.BankAccount do
 
   @impl Aggregate
   def execute(
-        %BankAccount{status: "active"},
-        %DepositMoney{
-          account_number: account_number,
-          amount: amount
-        }
+        %BankAccount{status: "active", account_number: account_number},
+        %DepositMoney{amount: amount}
       ) do
     money_deposited(account_number, amount)
   end
@@ -85,11 +80,8 @@ defmodule BankingApi.BankAccounts.Aggregates.BankAccount do
 
   @impl Aggregate
   def execute(
-        %BankAccount{status: "active"} = bank_account,
-        %WithdrawMoney{
-          account_number: account_number,
-          amount: amount
-        }
+        %BankAccount{status: "active", account_number: account_number} = bank_account,
+        %WithdrawMoney{amount: amount}
       )
       when amount <= bank_account.balance do
     %MoneyWithdrawn{account_number: account_number, amount: amount}
@@ -109,6 +101,12 @@ defmodule BankingApi.BankAccounts.Aggregates.BankAccount do
   def execute(%BankAccount{status: "inactive"}, %command{})
       when command in [DepositMoney, WithdrawMoney, CloseBankAccount] do
     {:error, :account_closed}
+  end
+
+  @impl Aggregate
+  def execute(%BankAccount{id: nil}, %command{})
+      when command in [CloseBankAccount, DepositMoney, WithdrawMoney, UpdateBankAccountStatus] do
+    {:error, :not_found}
   end
 
   @impl Aggregate

@@ -13,7 +13,7 @@ defmodule BankingApi.Router do
 
   middleware(Validate)
 
-  identify(BankAccount, prefix: "bank-account-", by: :account_number)
+  identify(BankAccount, prefix: "bank-account-", by: :id)
 
   dispatch(
     [

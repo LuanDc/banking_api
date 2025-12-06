@@ -9,45 +9,15 @@ defmodule BankingApi.BankAccountsTest do
 
   import BankingApi.CommandsFactory
 
-  # Helper functions
-  defp create_account(account_number, initial_balance \\ 0) do
-    open_bank_account =
-      build_command(%OpenBankAccount{},
-        account_number: account_number,
-        initial_balance: initial_balance
-      )
-
-    BankingApiApp.dispatch(open_bank_account)
-  end
-
-  defp get_account!(account_number) do
-    Repo.get_by!(BankAccount, account_number: account_number)
-  end
-
-  defp unique_account_number do
-    "ACC-#{:rand.uniform(999_999)}"
-  end
-
-  describe "open_bank_account/1" do
-    @valid_params %{
-      "initial_balance" => 1000,
-      "account_number" => "0001-01",
-      "status" => "active"
-    }
-
-    @tag :integration
-    test "success: returns :ok and read model reflects final state" do
-      assert {:ok, _bank_account} = BankAccounts.open_bank_account(@valid_params)
-
-      account = get_account!(@valid_params["account_number"])
-
-      assert account.status == :active
-      assert account.balance == 1000
-    end
-
-    @tag :integration
+  # Unit tests - focus on validation and error handling without full integration
+  describe "open_bank_account/1 - unit" do
+    @tag :unit
     test "error: returns validation error when initial balance is negative" do
-      invalid_params = %{@valid_params | "initial_balance" => -1}
+      invalid_params = %{
+        "initial_balance" => -1,
+        "account_number" => "0001-01",
+        "status" => "active"
+      }
 
       assert {:error, :validation_failure, errors} =
                BankAccounts.open_bank_account(invalid_params)
@@ -55,143 +25,261 @@ defmodule BankingApi.BankAccountsTest do
       assert errors != %{}
     end
 
-    test "error: returns error when account already exists" do
-      account_number = "ACC-001"
-      params = %{@valid_params | "account_number" => account_number}
+    @tag :unit
+    test "error: returns validation error when account number is missing" do
+      invalid_params = %{
+        "initial_balance" => 1000,
+        "status" => "active"
+      }
 
-      assert {:ok, _bank_account} = BankAccounts.open_bank_account(params)
-      assert {:error, :account_already_opened} = BankAccounts.open_bank_account(params)
-    end
-  end
-
-  describe "close_bank_account/1" do
-    @account_number "ACC-002"
-    @valid_params %{"account_number" => @account_number}
-    @invalid_params %{"account_number" => nil}
-
-    @tag :integration
-    test "success: returns :ok and read model reflects final state" do
-      create_account(@account_number)
-
-      assert :ok = BankAccounts.close_bank_account(@valid_params)
-
-      account = get_account!(@account_number)
-      assert account.status == :inactive
-    end
-
-    @tag :integration
-    test "error: returns validation error when account number is nil" do
       assert {:error, :validation_failure, errors} =
-               BankAccounts.close_bank_account(@invalid_params)
+               BankAccounts.open_bank_account(invalid_params)
 
-      assert errors == %{account_number: ["can't be empty"]}
-    end
-
-    @tag :integration
-    test "error: returns not found when account does not exist" do
-      assert {:error, :not_found} = BankAccounts.close_bank_account(@valid_params)
+      assert errors[:account_number] != nil
     end
   end
 
-  describe "deposit/1" do
-    @account_number "ACC-003"
-    @deposit_amount 50
-    @valid_params %{"account_number" => @account_number, "amount" => @deposit_amount}
-    @invalid_params %{"account_number" => nil, "amount" => 0}
+  describe "close_bank_account/1 - unit" do
+    @tag :unit
+    test "error: returns validation error when id is nil" do
+      invalid_params = %{"id" => nil}
 
-    @tag :integration
-    test "success: returns :ok and read model reflects final state" do
-      create_account(@account_number)
+      assert {:error, :validation_failure, errors} =
+               BankAccounts.close_bank_account(invalid_params)
 
-      assert {:ok, _bank_account} = BankAccounts.deposit(@valid_params)
-
-      account = get_account!(@account_number)
-      assert account.balance == @deposit_amount
+      assert errors == %{id: ["can't be empty", "must be valid"]}
     end
 
-    @tag :integration
-    test "error: returns validation error when account number is nil" do
-      assert {:error, :validation_failure, errors} = BankAccounts.deposit(@invalid_params)
+    @tag :unit
+    test "error: returns validation error when id is invalid" do
+      invalid_params = %{"id" => "invalid-uuid"}
 
-      assert errors == %{account_number: ["can't be empty"]}
+      assert {:error, :validation_failure, errors} =
+               BankAccounts.close_bank_account(invalid_params)
+
+      assert errors[:id] == ["must be valid"]
     end
 
-    @tag :integration
-    test "error: returns not found when account does not exist" do
-      assert {:error, :not_found} = BankAccounts.deposit(@valid_params)
+    @tag :unit
+    test "error: returns validation error when id is missing" do
+      invalid_params = %{}
+
+      assert {:error, :validation_failure, errors} =
+               BankAccounts.close_bank_account(invalid_params)
+
+      assert errors == %{id: ["can't be empty", "must be valid"]}
     end
   end
 
-  describe "withdraw/1" do
-    @account_number "ACC-004"
-    @initial_balance 100
-    @withdraw_amount 50
-    @valid_params %{"account_number" => @account_number, "amount" => @withdraw_amount}
-    @invalid_params %{"account_number" => nil, "amount" => @withdraw_amount}
+  describe "deposit/1 - unit" do
+    @tag :unit
+    test "error: returns validation error when id is nil" do
+      invalid_params = %{"id" => nil, "amount" => 0}
 
-    @tag :integration
-    test "success: returns :ok and read model reflects final state" do
-      create_account(@account_number, @initial_balance)
+      assert {:error, :validation_failure, errors} = BankAccounts.deposit(invalid_params)
 
-      assert {:ok, _bank_account} = BankAccounts.withdraw(@valid_params)
+      assert errors == %{id: ["can't be empty", "must be valid"]}
+    end
 
-      account = get_account!(@account_number)
-      assert account.balance == @initial_balance - @withdraw_amount
+    @tag :unit
+    test "error: returns validation error when id is invalid" do
+      invalid_params = %{"id" => "invalid-uuid", "amount" => 100}
+
+      assert {:error, :validation_failure, errors} = BankAccounts.deposit(invalid_params)
+
+      assert errors[:id] == ["must be valid"]
+    end
+
+    @tag :unit
+    test "error: returns validation error when amount is negative" do
+      invalid_params = %{"id" => Ecto.UUID.generate(), "amount" => -10}
+
+      assert {:error, :validation_failure, errors} = BankAccounts.deposit(invalid_params)
+
+      assert errors[:amount] != nil
+    end
+
+    @tag :unit
+    test "error: returns validation error when amount is missing" do
+      invalid_params = %{"id" => Ecto.UUID.generate()}
+
+      assert {:error, :validation_failure, errors} = BankAccounts.deposit(invalid_params)
+
+      assert errors[:amount] != nil
+    end
+  end
+
+  describe "withdraw/1 - unit" do
+    @tag :unit
+    test "error: returns validation error when id is nil" do
+      invalid_params = %{"id" => nil, "amount" => 50}
+
+      assert {:error, :validation_failure, errors} = BankAccounts.withdraw(invalid_params)
+
+      assert errors == %{id: ["can't be empty", "must be valid"]}
+    end
+
+    @tag :unit
+    test "error: returns validation error when id is invalid" do
+      invalid_params = %{"id" => "invalid-uuid", "amount" => 50}
+
+      assert {:error, :validation_failure, errors} = BankAccounts.withdraw(invalid_params)
+
+      assert errors[:id] == ["must be valid"]
+    end
+
+    @tag :unit
+    test "error: returns validation error when amount is negative" do
+      invalid_params = %{"id" => Ecto.UUID.generate(), "amount" => -10}
+
+      assert {:error, :validation_failure, errors} = BankAccounts.withdraw(invalid_params)
+
+      assert errors[:amount] != nil
+    end
+
+    @tag :unit
+    test "error: returns validation error when amount is missing" do
+      invalid_params = %{"id" => Ecto.UUID.generate()}
+
+      assert {:error, :validation_failure, errors} = BankAccounts.withdraw(invalid_params)
+
+      assert errors[:amount] != nil
+    end
+  end
+
+  # Integration tests - minimal smoke tests for the full flow
+  describe "integration tests" do
+    # Helper functions for integration tests only
+    defp create_account(account_number, initial_balance \\ 0) do
+      open_bank_account =
+        build_command(%OpenBankAccount{},
+          account_number: account_number,
+          initial_balance: initial_balance
+        )
+
+      BankingApiApp.dispatch(open_bank_account)
+
+      # Wait for projections
+      Process.sleep(50)
+
+      # Return the account
+      Repo.get_by!(BankAccount, account_number: account_number)
+    end
+
+    defp get_account!(id) do
+      Repo.get!(BankAccount, id)
+    end
+
+    defp unique_account_number do
+      "ACC-#{:rand.uniform(999_999)}"
     end
 
     @tag :integration
-    test "error: returns validation error when account number is nil" do
-      assert {:error, :validation_failure, errors} = BankAccounts.withdraw(@invalid_params)
+    test "open_bank_account/1: success flow creates account with correct state" do
+      valid_params = %{
+        "initial_balance" => 1000,
+        "account_number" => "0001-01",
+        "status" => "active"
+      }
 
-      assert errors == %{account_number: ["can't be empty"]}
+      assert {:ok, bank_account} = BankAccounts.open_bank_account(valid_params)
+
+      account = get_account!(bank_account.id)
+
+      assert account.status == :active
+      assert account.balance == 1000
     end
 
     @tag :integration
-    test "error: returns not found when account does not exist" do
-      assert {:error, :not_found} = BankAccounts.withdraw(@valid_params)
+    test "close_bank_account/1: success flow updates status to inactive" do
+      bank_account = create_account("ACC-002")
+
+      params = %{"id" => bank_account.id}
+
+      assert {:ok, updated_account} = BankAccounts.close_bank_account(params)
+
+      assert updated_account.status == :inactive
     end
 
     @tag :integration
-    test "error: returns insufficient funds when balance is too low" do
-      account_number = unique_account_number()
-      create_account(account_number, 10)
+    test "close_bank_account/1: returns not found when account does not exist" do
+      params = %{"id" => Ecto.UUID.generate()}
 
-      params = %{"account_number" => account_number, "amount" => 100}
+      assert {:error, :not_found} = BankAccounts.close_bank_account(params)
+    end
+
+    @tag :integration
+    test "deposit/1: success flow increases balance" do
+      bank_account = create_account("ACC-003")
+
+      params = %{"id" => bank_account.id, "amount" => 50}
+
+      assert {:ok, updated_account} = BankAccounts.deposit(params)
+
+      assert updated_account.balance == 50
+    end
+
+    @tag :integration
+    test "deposit/1: returns not found when account does not exist" do
+      params = %{"id" => Ecto.UUID.generate(), "amount" => 50}
+
+      assert {:error, :not_found} = BankAccounts.deposit(params)
+    end
+
+    @tag :integration
+    test "withdraw/1: success flow decreases balance" do
+      bank_account = create_account("ACC-004", 100)
+
+      params = %{"id" => bank_account.id, "amount" => 50}
+
+      assert {:ok, updated_account} = BankAccounts.withdraw(params)
+
+      assert updated_account.balance == 50
+    end
+
+    @tag :integration
+    test "withdraw/1: returns not found when account does not exist" do
+      params = %{"id" => Ecto.UUID.generate(), "amount" => 50}
+
+      assert {:error, :not_found} = BankAccounts.withdraw(params)
+    end
+
+    @tag :integration
+    test "withdraw/1: returns insufficient funds when balance is too low" do
+      bank_account = create_account(unique_account_number(), 10)
+
+      params = %{"id" => bank_account.id, "amount" => 100}
 
       assert {:error, :insufficient_funds} = BankAccounts.withdraw(params)
     end
-  end
 
-  describe "operations on closed account" do
     @tag :integration
-    test "error: cannot deposit money on closed account" do
-      account_number = unique_account_number()
-      create_account(account_number)
-      BankAccounts.close_bank_account(%{"account_number" => account_number})
+    test "operations on closed account: cannot deposit" do
+      bank_account = create_account(unique_account_number())
+      BankAccounts.close_bank_account(%{"id" => bank_account.id})
 
       assert {:error, :account_closed} =
-               BankAccounts.deposit(%{"account_number" => account_number, "amount" => 50})
+               BankAccounts.deposit(%{"id" => bank_account.id, "amount" => 50})
     end
 
     @tag :integration
-    test "error: cannot withdraw money from closed account" do
-      account_number = unique_account_number()
-      create_account(account_number, 100)
-      BankAccounts.close_bank_account(%{"account_number" => account_number})
+    test "operations on closed account: cannot withdraw" do
+      bank_account = create_account(unique_account_number(), 100)
+      BankAccounts.close_bank_account(%{"id" => bank_account.id})
 
       assert {:error, :account_closed} =
-               BankAccounts.withdraw(%{"account_number" => account_number, "amount" => 50})
+               BankAccounts.withdraw(%{"id" => bank_account.id, "amount" => 50})
     end
 
     @tag :integration
-    test "error: cannot close an already closed account" do
-      account_number = unique_account_number()
-      create_account(account_number)
+    test "operations on closed account: cannot close twice" do
+      bank_account = create_account(unique_account_number())
 
-      assert :ok = BankAccounts.close_bank_account(%{"account_number" => account_number})
+      assert {:ok, _closed_account} =
+               BankAccounts.close_bank_account(%{"id" => bank_account.id})
 
       assert {:error, :account_closed} =
-               BankAccounts.close_bank_account(%{"account_number" => account_number})
+               BankAccounts.close_bank_account(%{"id" => bank_account.id})
     end
   end
 end

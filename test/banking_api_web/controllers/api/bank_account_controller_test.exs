@@ -6,7 +6,7 @@ defmodule BankingApiWeb.Api.BankAccountControllerTest do
     test "success: returns bank account when it exists", %{conn: conn} do
       bank_account = insert(:bank_account)
 
-      conn = get(conn, ~p"/api/bank_account/#{bank_account.account_number}")
+      conn = get(conn, ~p"/api/bank_account/#{bank_account.id}")
 
       assert json_response(conn, 200) == %{
                "id" => bank_account.id,
@@ -18,9 +18,9 @@ defmodule BankingApiWeb.Api.BankAccountControllerTest do
 
     @tag :web
     test "error: returns 404 when account_number does not exist", %{conn: conn} do
-      non_existent_account = "nonexistent-account"
+      id = Ecto.UUID.generate()
 
-      conn = get(conn, ~p"/api/bank_account/#{non_existent_account}")
+      conn = get(conn, ~p"/api/bank_account/#{id}")
 
       assert json_response(conn, 404) == %{"error" => "Not found!"}
     end

@@ -7,7 +7,7 @@ defmodule BankingApi.BankAccounts.Commands.DepositMoneyTest do
 
   @tag :unit
   test "success: passes valid command through the pipeline" do
-    attrs = %{"account_number" => "ACC-1", "amount" => 50}
+    attrs = %{"id" => Ecto.UUID.generate(), "amount" => 50}
 
     command = DepositMoney.new(attrs)
 
@@ -27,19 +27,19 @@ defmodule BankingApi.BankAccounts.Commands.DepositMoneyTest do
     assert {:error, :validation_failure, errors} = result.response
 
     assert errors == %{
-             account_number: ["can't be empty"],
+             id: ["can't be empty", "must be valid"],
              amount: ["must be a number greater than or equal to 0"]
            }
   end
 
   @tag :unit
-  test "error: halts pipeline and returns validation errors for command with invalid account number type" do
-    invalid_params = %{"account_number" => 1}
+  test "error: halts pipeline and returns validation errors for command with invalid id type" do
+    invalid_params = %{"id" => 1, "amount" => 50}
     command = DepositMoney.new(invalid_params)
 
     result = validate(command)
 
     assert {:error, :validation_failure, errors} = result.response
-    assert errors[:account_number] == ["is not a valid string"]
+    assert errors[:id] == ["must be valid"]
   end
 end

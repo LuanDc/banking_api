@@ -1,11 +1,11 @@
 defmodule BankingApi.BankAccounts.Commands.UpdateBankAccountStatus do
-  defstruct [:account_number, :status]
+  defstruct [:id, :status]
   use ExConstructor
   use Vex.Struct
 
-  validates(:account_number,
+  validates(:id,
     presence: [message: "can't be empty"],
-    string: true
+    uuid: true
   )
 
   validates(:status, inclusion: ["active", "inactive"])

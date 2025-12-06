@@ -5,8 +5,8 @@ defmodule BankingApiWeb.Api.BankAccountController do
 
   action_fallback BankingApiWeb.FallbackController
 
-  def get(conn, %{"account_number" => account_number}) do
-    with {:ok, bank_account} <- BankAccounts.get_by(account_number: account_number) do
+  def get(conn, %{"id" => id}) do
+    with {:ok, bank_account} <- BankAccounts.get(id) do
       conn
       |> put_status(200)
       |> json(bank_account)

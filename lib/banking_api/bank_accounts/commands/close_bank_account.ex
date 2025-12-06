@@ -1,10 +1,10 @@
 defmodule BankingApi.BankAccounts.Commands.CloseBankAccount do
-  defstruct [:account_number]
+  defstruct [:id]
   use ExConstructor
   use Vex.Struct
 
-  validates(:account_number,
+  validates(:id,
     presence: [message: "can't be empty"],
-    string: true
+    uuid: true
   )
 end

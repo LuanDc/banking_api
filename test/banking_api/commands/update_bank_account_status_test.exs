@@ -8,7 +8,7 @@ defmodule BankingApi.BankAccounts.Commands.UpdateBankAccountStatusTest do
   @tag :unit
   test "success: passes valid command through the pipeline" do
     attrs = %{
-      "account_number" => "ACC-1",
+      "id" => Ecto.UUID.generate(),
       "status" => "inactive"
     }
 
@@ -31,13 +31,13 @@ defmodule BankingApi.BankAccounts.Commands.UpdateBankAccountStatusTest do
 
     assert errors == %{
              status: ["must be one of [\"active\", \"inactive\"]"],
-             account_number: ["can't be empty"]
+             id: ["can't be empty", "must be valid"]
            }
   end
 
   @tag :unit
   test "error: halts pipeline and returns validation errors for invalid status" do
-    invalid_params = %{"account_number" => "ACC-1", "status" => "invalid"}
+    invalid_params = %{"id" => Ecto.UUID.generate(), "status" => "invalid"}
     command = UpdateBankAccountStatus.new(invalid_params)
 
     result = validate(command)

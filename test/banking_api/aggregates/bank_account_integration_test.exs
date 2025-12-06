@@ -41,7 +41,7 @@ defmodule BankingApi.Aggregates.BankAccountIntegrationTest do
       assert Aggregate.aggregate_state(
                BankingApiApp,
                BankAccount,
-               "bank-account-#{open_bank_account.account_number}"
+               "bank-account-#{open_bank_account.id}"
              ) ==
                %BankAccount{
                  id: open_bank_account.id,
@@ -69,21 +69,21 @@ defmodule BankingApi.Aggregates.BankAccountIntegrationTest do
 
       deposit_money =
         build_command(%DepositMoney{},
-          account_number: open_bank_account.account_number,
+          id: open_bank_account.id,
           amount: 100
         )
 
       assert BankingApiApp.dispatch([open_bank_account, deposit_money]) == :ok
 
       wait_for_event(BankingApiApp, MoneyDeposited, fn event ->
-        assert event.account_number == deposit_money.account_number
+        assert event.account_number == open_bank_account.account_number
         assert event.amount == deposit_money.amount
       end)
 
       assert Aggregate.aggregate_state(
                BankingApiApp,
                BankAccount,
-               "bank-account-#{open_bank_account.account_number}"
+               "bank-account-#{open_bank_account.id}"
              ) ==
                %BankAccount{
                  id: open_bank_account.id,
@@ -95,7 +95,7 @@ defmodule BankingApi.Aggregates.BankAccountIntegrationTest do
 
     @tag :integration
     test "rejects deposit on non-existent account" do
-      deposit_money = build_command(%DepositMoney{account_number: "non-existent", amount: 100})
+      deposit_money = build_command(%DepositMoney{id: Ecto.UUID.generate(), amount: 100})
 
       assert BankingApiApp.dispatch(deposit_money) == {:error, :not_found}
     end
@@ -112,21 +112,21 @@ defmodule BankingApi.Aggregates.BankAccountIntegrationTest do
 
       withdraw_money =
         build_command(%WithdrawMoney{},
-          account_number: open_bank_account.account_number,
+          id: open_bank_account.id,
           amount: withdrawal_amount
         )
 
       assert BankingApiApp.dispatch([open_bank_account, withdraw_money]) == :ok
 
       wait_for_event(BankingApiApp, MoneyWithdrawn, fn event ->
-        assert event.account_number == withdraw_money.account_number
+        assert event.account_number == open_bank_account.account_number
         assert event.amount == withdrawal_amount
       end)
 
       assert Aggregate.aggregate_state(
                BankingApiApp,
                BankAccount,
-               "bank-account-#{open_bank_account.account_number}"
+               "bank-account-#{open_bank_account.id}"
              ) ==
                %BankAccount{
                  id: open_bank_account.id,
@@ -142,7 +142,7 @@ defmodule BankingApi.Aggregates.BankAccountIntegrationTest do
 
       withdraw_money =
         build_command(%WithdrawMoney{},
-          account_number: open_bank_account.account_number,
+          id: open_bank_account.id,
           amount: 1000
         )
 
@@ -152,7 +152,7 @@ defmodule BankingApi.Aggregates.BankAccountIntegrationTest do
 
     @tag :integration
     test "rejects withdrawal on non-existent account" do
-      withdraw_money = build_command(%WithdrawMoney{account_number: "non-existent", amount: 100})
+      withdraw_money = build_command(%WithdrawMoney{id: Ecto.UUID.generate(), amount: 100})
 
       assert BankingApiApp.dispatch(withdraw_money) == {:error, :not_found}
     end
@@ -165,20 +165,20 @@ defmodule BankingApi.Aggregates.BankAccountIntegrationTest do
 
       close_bank_account =
         build_command(%CloseBankAccount{},
-          account_number: open_bank_account.account_number
+          id: open_bank_account.id
         )
 
       assert BankingApiApp.dispatch([open_bank_account, close_bank_account]) == :ok
 
       wait_for_event(BankingApiApp, BankAccountClosed, fn event ->
-        assert event.account_number == close_bank_account.account_number
+        assert event.account_number == open_bank_account.account_number
         assert event.status == "inactive"
       end)
 
       assert Aggregate.aggregate_state(
                BankingApiApp,
                BankAccount,
-               "bank-account-#{open_bank_account.account_number}"
+               "bank-account-#{open_bank_account.id}"
              ) ==
                %BankAccount{
                  id: open_bank_account.id,
@@ -190,7 +190,7 @@ defmodule BankingApi.Aggregates.BankAccountIntegrationTest do
 
     @tag :integration
     test "rejects closing non-existent account" do
-      close_bank_account = build_command(%CloseBankAccount{account_number: "non-existent"})
+      close_bank_account = build_command(%CloseBankAccount{id: Ecto.UUID.generate()})
 
       assert BankingApiApp.dispatch(close_bank_account) == {:error, :not_found}
     end
@@ -204,10 +204,10 @@ defmodule BankingApi.Aggregates.BankAccountIntegrationTest do
       open_bank_account = build_command(%OpenBankAccount{}, account_number: account_number)
 
       close_bank_account =
-        build_command(%CloseBankAccount{}, account_number: account_number)
+        build_command(%CloseBankAccount{}, id: open_bank_account.id)
 
       deposit_money =
-        build_command(%DepositMoney{}, account_number: account_number, amount: 100)
+        build_command(%DepositMoney{}, id: open_bank_account.id, amount: 100)
 
       assert BankingApiApp.dispatch([open_bank_account, close_bank_account, deposit_money]) ==
                {:error, :account_closed}
@@ -225,10 +225,10 @@ defmodule BankingApi.Aggregates.BankAccountIntegrationTest do
         )
 
       close_bank_account =
-        build_command(%CloseBankAccount{}, account_number: account_number)
+        build_command(%CloseBankAccount{}, id: open_bank_account.id)
 
       withdraw_money =
-        build_command(%WithdrawMoney{}, account_number: account_number, amount: 50)
+        build_command(%WithdrawMoney{}, id: open_bank_account.id, amount: 50)
 
       assert BankingApiApp.dispatch([open_bank_account, close_bank_account, withdraw_money]) ==
                {:error, :account_closed}
@@ -241,10 +241,10 @@ defmodule BankingApi.Aggregates.BankAccountIntegrationTest do
       open_bank_account = build_command(%OpenBankAccount{}, account_number: account_number)
 
       close_bank_account_1 =
-        build_command(%CloseBankAccount{}, account_number: account_number)
+        build_command(%CloseBankAccount{}, id: open_bank_account.id)
 
       close_bank_account_2 =
-        build_command(%CloseBankAccount{}, account_number: account_number)
+        build_command(%CloseBankAccount{}, id: open_bank_account.id)
 
       assert BankingApiApp.dispatch([
                open_bank_account,
