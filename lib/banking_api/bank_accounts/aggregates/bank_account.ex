@@ -65,7 +65,8 @@ defmodule BankingApi.BankAccounts.Aggregates.BankAccount do
   def execute(
         %BankAccount{status: "active", id: id},
         %DepositMoney{amount: amount}
-      ) do
+      )
+      when not is_nil(id) do
     money_deposited(id, amount)
   end
 
@@ -73,18 +74,19 @@ defmodule BankingApi.BankAccounts.Aggregates.BankAccount do
 
   @impl Aggregate
   def execute(
-        %BankAccount{status: "active"} = bank_account,
-        %WithdrawMoney{id: id, amount: amount}
+        %BankAccount{status: "active", id: id} = bank_account,
+        %WithdrawMoney{amount: amount}
       )
-      when amount <= bank_account.balance do
+      when not is_nil(id) and amount <= bank_account.balance do
     %MoneyWithdrawn{id: id, amount: amount, date: DateTime.utc_now()}
   end
 
   @impl Aggregate
   def execute(
-        %BankAccount{status: "active"},
+        %BankAccount{status: "active", id: id},
         %WithdrawMoney{}
-      ) do
+      )
+      when not is_nil(id) do
     {:error, :insufficient_funds}
   end
 

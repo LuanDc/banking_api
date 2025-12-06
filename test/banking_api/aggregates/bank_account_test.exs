@@ -142,6 +142,25 @@ defmodule BankingApi.Aggregates.BankAccountTest do
 
       assert result == {:error, :account_closed}
     end
+
+    @tag :unit
+    test "returns error when aggregate ID is nil (not found)" do
+      aggregate = %BankAccount{
+        id: nil,
+        account_number: "ACC-999",
+        balance: 1000,
+        status: "active"
+      }
+
+      command = %DepositMoney{
+        id: Ecto.UUID.generate(),
+        amount: 500
+      }
+
+      result = BankAccount.execute(aggregate, command)
+
+      assert result == {:error, :not_found}
+    end
   end
 
   describe "BankAccount.execute/2 - WithdrawMoney" do
@@ -243,6 +262,25 @@ defmodule BankingApi.Aggregates.BankAccountTest do
       result = BankAccount.execute(aggregate, command)
 
       assert result == {:error, :account_closed}
+    end
+
+    @tag :unit
+    test "returns error when aggregate ID is nil (not found)" do
+      aggregate = %BankAccount{
+        id: nil,
+        account_number: "ACC-999",
+        balance: 1000,
+        status: "active"
+      }
+
+      command = %WithdrawMoney{
+        id: Ecto.UUID.generate(),
+        amount: 100
+      }
+
+      result = BankAccount.execute(aggregate, command)
+
+      assert result == {:error, :not_found}
     end
   end
 

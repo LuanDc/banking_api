@@ -1,5 +1,8 @@
 ###
-GET http://localhost:4000/api/bank_account/7d1170a4-a2aa-43ff-948b-898df946cc83
+GET http://localhost:4000/api/bank_account/c0fa7172-4b8a-4836-9b18-1e2db3656448
+
+###
+GET http://localhost:4000/api/bank_account/c0fa7172-4b8a-4836-9b18-1e2db3656448/transactions
 
 ###
 
@@ -18,7 +21,7 @@ POST http://localhost:4000/api/bank_account/status
 content-type: application/json
 
 {
-    "id": "7d1170a4-a2aa-43ff-948b-898df946cc83",
+    "id": "c0fa7172-4b8a-4836-9b18-1e2db3656448",
     "status": "active"
 }
 
@@ -28,7 +31,7 @@ POST http://localhost:4000/api/bank_account/deposit
 content-type: application/json
 
 {
-    "id": "7d1170a4-a2aa-43ff-948b-898df946cc83",
+    "id": "c0fa7172-4b8a-4836-9b18-1e2db3656448",
     "amount": 200
 }
 
@@ -38,22 +41,6 @@ POST http://localhost:4000/api/bank_account/withdraw
 content-type: application/json
 
 {
-    "id": "7d1170a4-a2aa-43ff-948b-898df946cc83",
+    "id": "c0fa7172-4b8a-4836-9b18-1e2db3656448",
     "amount": 100
 }
-
-###
-
-GET http://localhost:4000/api/bank_account/A123456/transactions
-
-###
-
-GET http://localhost:4000/api/bank_account/A123456/transactions?start_date=2025-12-01T00:00:00Z
-
-###
-
-GET http://localhost:4000/api/bank_account/A123456/transactions?end_date=2025-12-31T23:59:59Z
-
-###
-
-GET http://localhost:4000/api/bank_account/A123456/transactions?start_date=2025-12-01T00:00:00Z&end_date=2025-12-31T23:59:59Z

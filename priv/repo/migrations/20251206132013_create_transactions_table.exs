@@ -4,8 +4,10 @@ defmodule BankingApi.Repo.Migrations.CreateTransactionsTable do
   def change do
     create table(:transactions, primary_key: false) do
       add :id, :uuid, primary_key: true
+
       add :bank_account_id, references(:bank_accounts, type: :uuid, on_delete: :delete_all),
         null: false
+
       add :account_number, :string, null: false
       add :type, :string, null: false
       add :amount, :integer, null: false

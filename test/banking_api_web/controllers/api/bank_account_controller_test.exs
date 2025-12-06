@@ -26,14 +26,28 @@ defmodule BankingApiWeb.Api.BankAccountControllerTest do
     end
   end
 
-  describe "GET /api/bank_account/:account_number/transactions" do
+  describe "GET /api/bank_account/:id/transactions" do
     @tag :web
     test "success: returns all transactions for an account", %{conn: conn} do
       bank_account = insert(:bank_account)
-      transaction1 = insert(:transaction, bank_account_id: bank_account.id, account_number: bank_account.account_number, amount: 100, type: "deposit")
-      transaction2 = insert(:transaction, bank_account_id: bank_account.id, account_number: bank_account.account_number, amount: 50, type: "withdrawal")
 
-      conn = get(conn, ~p"/api/bank_account/#{bank_account.account_number}/transactions")
+      transaction1 =
+        insert(:transaction,
+          bank_account_id: bank_account.id,
+          account_number: bank_account.account_number,
+          amount: 100,
+          type: "deposit"
+        )
+
+      transaction2 =
+        insert(:transaction,
+          bank_account_id: bank_account.id,
+          account_number: bank_account.account_number,
+          amount: 50,
+          type: "withdrawal"
+        )
+
+      conn = get(conn, ~p"/api/bank_account/#{bank_account.id}/transactions")
 
       response = json_response(conn, 200)
       assert length(response["transactions"]) == 2
@@ -47,11 +61,27 @@ defmodule BankingApiWeb.Api.BankAccountControllerTest do
       old_date = DateTime.utc_now() |> DateTime.add(-2, :day)
       recent_date = DateTime.utc_now()
 
-      _old_transaction = insert(:transaction, bank_account_id: bank_account.id, account_number: bank_account.account_number, date: old_date)
-      recent_transaction = insert(:transaction, bank_account_id: bank_account.id, account_number: bank_account.account_number, date: recent_date)
+      _old_transaction =
+        insert(:transaction,
+          bank_account_id: bank_account.id,
+          account_number: bank_account.account_number,
+          date: old_date
+        )
+
+      recent_transaction =
+        insert(:transaction,
+          bank_account_id: bank_account.id,
+          account_number: bank_account.account_number,
+          date: recent_date
+        )
 
       start_date = DateTime.utc_now() |> DateTime.add(-1, :day) |> DateTime.to_iso8601()
-      conn = get(conn, ~p"/api/bank_account/#{bank_account.account_number}/transactions?start_date=#{start_date}")
+
+      conn =
+        get(
+          conn,
+          ~p"/api/bank_account/#{bank_account.id}/transactions?start_date=#{start_date}"
+        )
 
       response = json_response(conn, 200)
       assert length(response["transactions"]) == 1
@@ -64,11 +94,27 @@ defmodule BankingApiWeb.Api.BankAccountControllerTest do
       old_date = DateTime.utc_now() |> DateTime.add(-2, :day)
       recent_date = DateTime.utc_now()
 
-      old_transaction = insert(:transaction, bank_account_id: bank_account.id, account_number: bank_account.account_number, date: old_date)
-      _recent_transaction = insert(:transaction, bank_account_id: bank_account.id, account_number: bank_account.account_number, date: recent_date)
+      old_transaction =
+        insert(:transaction,
+          bank_account_id: bank_account.id,
+          account_number: bank_account.account_number,
+          date: old_date
+        )
+
+      _recent_transaction =
+        insert(:transaction,
+          bank_account_id: bank_account.id,
+          account_number: bank_account.account_number,
+          date: recent_date
+        )
 
       end_date = DateTime.utc_now() |> DateTime.add(-1, :day) |> DateTime.to_iso8601()
-      conn = get(conn, ~p"/api/bank_account/#{bank_account.account_number}/transactions?end_date=#{end_date}")
+
+      conn =
+        get(
+          conn,
+          ~p"/api/bank_account/#{bank_account.id}/transactions?end_date=#{end_date}"
+        )
 
       response = json_response(conn, 200)
       assert length(response["transactions"]) == 1
@@ -82,13 +128,40 @@ defmodule BankingApiWeb.Api.BankAccountControllerTest do
       middle_date = DateTime.utc_now() |> DateTime.add(-2, :day)
       recent_date = DateTime.utc_now()
 
-      _old_transaction = insert(:transaction, bank_account_id: bank_account.id, account_number: bank_account.account_number, date: old_date)
-      middle_transaction = insert(:transaction, bank_account_id: bank_account.id, account_number: bank_account.account_number, date: middle_date)
-      _recent_transaction = insert(:transaction, bank_account_id: bank_account.id, account_number: bank_account.account_number, date: recent_date)
+      _old_transaction =
+        insert(:transaction,
+          bank_account_id: bank_account.id,
+          account_number: bank_account.account_number,
+          date: old_date
+        )
 
-      start_date = DateTime.utc_now() |> DateTime.add(-2, :day) |> DateTime.add(-1, :hour) |> DateTime.to_iso8601()
+      middle_transaction =
+        insert(:transaction,
+          bank_account_id: bank_account.id,
+          account_number: bank_account.account_number,
+          date: middle_date
+        )
+
+      _recent_transaction =
+        insert(:transaction,
+          bank_account_id: bank_account.id,
+          account_number: bank_account.account_number,
+          date: recent_date
+        )
+
+      start_date =
+        DateTime.utc_now()
+        |> DateTime.add(-2, :day)
+        |> DateTime.add(-1, :hour)
+        |> DateTime.to_iso8601()
+
       end_date = DateTime.utc_now() |> DateTime.add(-1, :day) |> DateTime.to_iso8601()
-      conn = get(conn, ~p"/api/bank_account/#{bank_account.account_number}/transactions?start_date=#{start_date}&end_date=#{end_date}")
+
+      conn =
+        get(
+          conn,
+          ~p"/api/bank_account/#{bank_account.id}/transactions?start_date=#{start_date}&end_date=#{end_date}"
+        )
 
       response = json_response(conn, 200)
       assert length(response["transactions"]) == 1
@@ -99,10 +172,121 @@ defmodule BankingApiWeb.Api.BankAccountControllerTest do
     test "success: returns empty list when no transactions exist", %{conn: conn} do
       bank_account = insert(:bank_account)
 
-      conn = get(conn, ~p"/api/bank_account/#{bank_account.account_number}/transactions")
+      conn = get(conn, ~p"/api/bank_account/#{bank_account.id}/transactions")
 
       response = json_response(conn, 200)
       assert response["transactions"] == []
+    end
+
+    @tag :web
+    test "success: paginates results with page and page_size", %{conn: conn} do
+      bank_account = insert(:bank_account)
+
+      # Cria 5 transações
+      transactions =
+        for i <- 1..5 do
+          insert(:transaction,
+            bank_account_id: bank_account.id,
+            account_number: bank_account.account_number,
+            amount: i * 10,
+            date: DateTime.utc_now() |> DateTime.add(-i, :hour)
+          )
+        end
+
+      # Ordena por data descendente (mais recente primeiro)
+      expected_order = Enum.sort_by(transactions, & &1.date, {:desc, DateTime})
+
+      # Primeira página com 2 itens
+      conn =
+        get(
+          conn,
+          ~p"/api/bank_account/#{bank_account.id}/transactions?page=1&page_size=2"
+        )
+
+      response = json_response(conn, 200)
+      assert length(response["transactions"]) == 2
+      assert hd(response["transactions"])["id"] == Enum.at(expected_order, 0).id
+      assert Enum.at(response["transactions"], 1)["id"] == Enum.at(expected_order, 1).id
+
+      # Segunda página com 2 itens
+      conn =
+        get(
+          conn,
+          ~p"/api/bank_account/#{bank_account.id}/transactions?page=2&page_size=2"
+        )
+
+      response = json_response(conn, 200)
+      assert length(response["transactions"]) == 2
+      assert hd(response["transactions"])["id"] == Enum.at(expected_order, 2).id
+      assert Enum.at(response["transactions"], 1)["id"] == Enum.at(expected_order, 3).id
+    end
+
+    @tag :web
+    test "success: returns first page when only page is provided", %{conn: conn} do
+      bank_account = insert(:bank_account)
+
+      # Cria 25 transações
+      for i <- 1..25 do
+        insert(:transaction,
+          bank_account_id: bank_account.id,
+          account_number: bank_account.account_number,
+          amount: i * 10,
+          date: DateTime.utc_now() |> DateTime.add(-i, :minute)
+        )
+      end
+
+      conn =
+        get(conn, ~p"/api/bank_account/#{bank_account.id}/transactions?page=2")
+
+      response = json_response(conn, 200)
+      assert length(response["transactions"]) == 5
+    end
+
+    @tag :web
+    test "success: uses custom page_size when only page_size is provided", %{conn: conn} do
+      bank_account = insert(:bank_account)
+
+      # Cria 15 transações
+      for i <- 1..15 do
+        insert(:transaction,
+          bank_account_id: bank_account.id,
+          account_number: bank_account.account_number,
+          amount: i * 10,
+          date: DateTime.utc_now() |> DateTime.add(-i, :minute)
+        )
+      end
+
+      conn =
+        get(conn, ~p"/api/bank_account/#{bank_account.id}/transactions?page_size=5")
+
+      response = json_response(conn, 200)
+      # Deve usar page 1 (padrão) com page_size 5
+      assert length(response["transactions"]) == 5
+    end
+
+    @tag :web
+    test "success: limits page_size to maximum of 100", %{conn: conn} do
+      bank_account = insert(:bank_account)
+
+      # Cria 150 transações
+      for i <- 1..150 do
+        insert(:transaction,
+          bank_account_id: bank_account.id,
+          account_number: bank_account.account_number,
+          amount: i * 10,
+          date: DateTime.utc_now() |> DateTime.add(-i, :second)
+        )
+      end
+
+      conn =
+        get(
+          conn,
+          ~p"/api/bank_account/#{bank_account.id}/transactions?page_size=200"
+        )
+
+      response = json_response(conn, 200)
+      # Deve limitar a 100 itens
+      assert length(response["transactions"]) == 100
     end
   end
 end

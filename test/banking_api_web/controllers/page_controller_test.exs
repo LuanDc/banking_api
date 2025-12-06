@@ -62,7 +62,8 @@ defmodule BankingApiWeb.PageControllerTest do
       end_time = System.monotonic_time(:millisecond)
 
       assert conn.status == 200
-      assert (end_time - start_time) < 1000  # Should load in less than 1 second
+      # Should load in less than 1 second
+      assert end_time - start_time < 1000
     end
   end
 end

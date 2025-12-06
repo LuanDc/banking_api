@@ -58,4 +58,18 @@ defmodule BankingApi.BankAccountsTest do
       assert updated_account.balance == 50
     end
   end
+
+  describe "list_transactions/2" do
+    @tag :integration
+    test "returns transactions for account" do
+      bank_account = setup_bank_account(balance: 0)
+
+      params = %{"id" => bank_account.id, "amount" => 100}
+      assert {:ok, _} = BankAccounts.deposit(params)
+
+      transactions = BankAccounts.list_transactions(bank_account.id)
+
+      assert length(transactions) > 0
+    end
+  end
 end
