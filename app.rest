@@ -1,5 +1,5 @@
 ###
-GET http://localhost:4000/api/bank_account/840269be-b92e-41fb-92d5-74309881e4d4
+GET http://localhost:4000/api/bank_account/7d1170a4-a2aa-43ff-948b-898df946cc83
 
 ###
 
@@ -18,7 +18,7 @@ POST http://localhost:4000/api/bank_account/status
 content-type: application/json
 
 {
-    "id": "840269be-b92e-41fb-92d5-74309881e4d4",
+    "id": "7d1170a4-a2aa-43ff-948b-898df946cc83",
     "status": "active"
 }
 
@@ -28,7 +28,7 @@ POST http://localhost:4000/api/bank_account/deposit
 content-type: application/json
 
 {
-    "id": "840269be-b92e-41fb-92d5-74309881e4d4",
+    "id": "7d1170a4-a2aa-43ff-948b-898df946cc83",
     "amount": 200
 }
 
@@ -38,8 +38,8 @@ POST http://localhost:4000/api/bank_account/withdraw
 content-type: application/json
 
 {
-    "id": "840269be-b92e-41fb-92d5-74309881e4d4",
-    "amount": 1
+    "id": "7d1170a4-a2aa-43ff-948b-898df946cc83",
+    "amount": 100
 }
 
 ###

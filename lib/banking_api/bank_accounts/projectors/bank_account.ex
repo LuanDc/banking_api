@@ -128,7 +128,9 @@ defmodule BankingApi.BankAccounts.Projectors.BankAccount do
         account_number: account_number,
         status: status
       }) do
-    update_bank_account(multi, bank_account_query(account_number: account_number), set: [status: status])
+    update_bank_account(multi, bank_account_query(account_number: account_number),
+      set: [status: status]
+    )
   end
 
   def project_bank_account_status_updated(multi, %BankAccountStatusUpdated{
