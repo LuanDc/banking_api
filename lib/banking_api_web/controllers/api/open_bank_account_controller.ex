@@ -16,6 +16,11 @@ defmodule BankingApiWeb.Api.OpenBankAccountController do
         |> put_status(422)
         |> json(%{"error" => "Account already opened"})
 
+      {:error, :account_number_already_taken} ->
+        conn
+        |> put_status(422)
+        |> json(%{"error" => "Account number already taken"})
+
       error ->
         error
     end

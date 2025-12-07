@@ -153,5 +153,52 @@ defmodule BankingApiWeb.Api.OpenBankAccountControllerTest do
                }
              }
     end
+
+    @tag :web
+    test "error: returns error when trying to open account with duplicate account_number", %{
+      conn: conn
+    } do
+      account_number = "DUPLICATE-#{:rand.uniform(1_000_000)}"
+
+      params = %{
+        "initial_balance" => 1000,
+        "account_number" => account_number,
+        "status" => "active"
+      }
+
+      conn1 = post(conn, ~p"/api/bank_account/open", params)
+      assert json_response(conn1, 201)
+
+      conn2 = post(conn, ~p"/api/bank_account/open", params)
+      assert json_response(conn2, 422) == %{"error" => "Account number already taken"}
+    end
+
+    @tag :web
+    test "success: allows opening multiple accounts with different account_numbers", %{
+      conn: conn
+    } do
+      account_number_1 = "ACC-#{:rand.uniform(1_000_000)}"
+      account_number_2 = "ACC-#{:rand.uniform(1_000_000)}"
+
+      params1 = %{
+        "initial_balance" => 1000,
+        "account_number" => account_number_1,
+        "status" => "active"
+      }
+
+      params2 = %{
+        "initial_balance" => 2000,
+        "account_number" => account_number_2,
+        "status" => "active"
+      }
+
+      conn1 = post(conn, ~p"/api/bank_account/open", params1)
+      response1 = json_response(conn1, 201)
+      assert response1["account_number"] == account_number_1
+
+      conn2 = post(conn, ~p"/api/bank_account/open", params2)
+      response2 = json_response(conn2, 201)
+      assert response2["account_number"] == account_number_2
+    end
   end
 end

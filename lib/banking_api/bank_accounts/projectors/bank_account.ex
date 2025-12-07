@@ -19,37 +19,6 @@ defmodule BankingApi.BankAccounts.Projectors.BankAccount do
       update_bank_account: 3
     ]
 
-  # Commanded projections
-  project(
-    %BankAccountOpened{} = event,
-    _metadata,
-    fn multi -> project_bank_account_opened(multi, event) end
-  )
-
-  project(
-    %MoneyDeposited{} = event,
-    _metadata,
-    fn multi -> project_money_deposited(multi, event) end
-  )
-
-  project(
-    %MoneyWithdrawn{} = event,
-    _metadata,
-    fn multi -> project_money_withdrawn(multi, event) end
-  )
-
-  project(
-    %BankAccountClosed{} = event,
-    _metadata,
-    fn multi -> project_bank_account_closed(multi, event) end
-  )
-
-  project(
-    %BankAccountStatusUpdated{} = event,
-    _metadata,
-    fn multi -> project_bank_account_status_updated(multi, event) end
-  )
-
   def project_bank_account_opened(multi, %BankAccountOpened{
         id: id,
         account_number: account_number,
@@ -151,4 +120,35 @@ defmodule BankingApi.BankAccounts.Projectors.BankAccount do
       {:error, _} -> DateTime.utc_now()
     end
   end
+
+  # Commanded projections
+  project(
+    %BankAccountOpened{} = event,
+    _metadata,
+    fn multi -> project_bank_account_opened(multi, event) end
+  )
+
+  project(
+    %MoneyDeposited{} = event,
+    _metadata,
+    fn multi -> project_money_deposited(multi, event) end
+  )
+
+  project(
+    %MoneyWithdrawn{} = event,
+    _metadata,
+    fn multi -> project_money_withdrawn(multi, event) end
+  )
+
+  project(
+    %BankAccountClosed{} = event,
+    _metadata,
+    fn multi -> project_bank_account_closed(multi, event) end
+  )
+
+  project(
+    %BankAccountStatusUpdated{} = event,
+    _metadata,
+    fn multi -> project_bank_account_status_updated(multi, event) end
+  )
 end
