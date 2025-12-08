@@ -18,12 +18,14 @@ defmodule BankingApi.BankAccounts do
     end
   end
 
-  def get_by(filters) when is_list(filters) do
-    case Repo.get_by(BankAccount, filters) do
-      nil -> {:error, :not_found}
-      bank_account -> {:ok, bank_account}
+  def check_account_number_uniqueness(account_number) when is_bitstring(account_number) do
+    case Repo.get_by(BankAccount, account_number: account_number) do
+      nil -> :ok
+      _bank_account -> {:error, :duplicated_account_number}
     end
   end
+
+  def check_account_number_uniqueness(_), do: :ok
 
   def get_by!(filters) when is_list(filters) do
     Repo.get_by!(BankAccount, filters)
@@ -77,27 +79,34 @@ defmodule BankingApi.BankAccounts do
       |> OpenBankAccount.new()
       |> OpenBankAccount.assign_id(id)
 
-    with :ok <- BankingApiApp.dispatch(command, consistency: :strong) do
+    with :ok <- check_account_number_uniqueness(command.account_number),
+         :ok <- BankingApiApp.dispatch(command, consistency: :strong) do
       get(id)
     end
   end
 
   def deposit(params) do
-    with :ok <- BankingApiApp.dispatch(DepositMoney.new(params), consistency: :strong) do
-      get(params["bank_account_id"])
+    command = DepositMoney.new(params)
+
+    with :ok <- BankingApiApp.dispatch(command, consistency: :strong) do
+      get(command.bank_account_id)
     end
   end
 
   def withdraw(params) do
-    with :ok <- BankingApiApp.dispatch(WithdrawMoney.new(params), consistency: :strong) do
-      get(params["bank_account_id"])
+    command = WithdrawMoney.new(params)
+
+    with :ok <- BankingApiApp.dispatch(command, consistency: :strong) do
+      get(command.bank_account_id)
     end
   end
 
   def update_bank_account_status(params) do
+    command = UpdateBankAccountStatus.new(params)
+
     with :ok <-
-           BankingApiApp.dispatch(UpdateBankAccountStatus.new(params), consistency: :strong) do
-      get(params["bank_account_id"])
+           BankingApiApp.dispatch(command, consistency: :strong) do
+      get(command.bank_account_id)
     end
   end
 end
