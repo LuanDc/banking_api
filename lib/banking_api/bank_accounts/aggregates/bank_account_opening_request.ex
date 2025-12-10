@@ -1,5 +1,13 @@
 defmodule BankingApi.BankAccounts.Aggregates.BankAccountOpeningRequest do
-  defstruct [:id, :account_number, :initial_balance, :status]
+  defstruct [
+    :request_id,
+    :id,
+    :account_number,
+    :initial_balance,
+    :status,
+    :request_status,
+    :error
+  ]
 
   alias BankingApi.BankAccounts.Aggregates.BankAccountOpeningRequest
   alias BankingApi.BankAccounts.Commands.RequestBankAccountOpening
@@ -11,8 +19,9 @@ defmodule BankingApi.BankAccounts.Aggregates.BankAccountOpeningRequest do
 
   @impl Aggregate
   def execute(
-        %BankAccountOpeningRequest{id: nil},
+        %BankAccountOpeningRequest{request_id: nil},
         %RequestBankAccountOpening{
+          request_id: request_id,
           id: id,
           account_number: account_number,
           initial_balance: initial_balance,
@@ -24,6 +33,8 @@ defmodule BankingApi.BankAccounts.Aggregates.BankAccountOpeningRequest do
       account_number: account_number,
       initial_balance: initial_balance,
       status: status,
+      request_id: request_id,
+      request_status: :in_progress,
       date: DateTime.utc_now()
     }
   end
@@ -37,6 +48,7 @@ defmodule BankingApi.BankAccounts.Aggregates.BankAccountOpeningRequest do
   def apply(%BankAccountOpeningRequest{} = request, %BankAccountOpeningRequested{} = event) do
     %BankAccountOpeningRequested{
       id: id,
+      request_id: request_id,
       account_number: account_number,
       initial_balance: initial_balance,
       status: status
@@ -45,6 +57,7 @@ defmodule BankingApi.BankAccounts.Aggregates.BankAccountOpeningRequest do
     %BankAccountOpeningRequest{
       request
       | id: id,
+        request_id: request_id,
         account_number: account_number,
         initial_balance: initial_balance,
         status: status

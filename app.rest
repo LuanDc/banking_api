@@ -1,22 +1,63 @@
 ###
-GET http://localhost:4000/api/bank_account/da1a7fb8-8449-4afe-b675-4bc86539eb62
+# ========================================
+# FLUXO: ABERTURA DE CONTA BANCÁRIA
+# ========================================
 
 ###
-GET http://localhost:4000/api/bank_account/c0fa7172-4b8a-4836-9b18-1e2db3656448/transactions
-
-###
-
+# PASSO 1: Requisitar abertura de conta bancária
+# - O request_id é gerado automaticamente ({{$guid}})
+# - Retorna os dados da solicitação com status "in_progress"
+# - Copie o "id" retornado para usar no próximo passo
 POST http://localhost:4000/api/bank_account/open
 content-type: application/json
 
 {
-    "account_number": "B123454",
-    "initial_balance": 0,
+    "request_id": "{{$guid}}",
+    "account_number": "ACC-{{$randomInt}}",
+    "initial_balance": 1000,
+    "status": "active"
+}
+
+###a
+# PASSO 2: Consultar status da solicitação de abertura
+# - Use o request_id (id) retornado no passo anterior
+# - Permite fazer polling para verificar o status da solicitação
+GET http://localhost:4000/api/bank_account_opening_request/1c2715ba-b451-4443-9b04-00a89be8577e
+
+###
+# PASSO 3 (OPCIONAL): Testar idempotência
+# - Execute novamente o mesmo request_id do PASSO 1
+# - Deve retornar erro: "bank_account_opening_already_requested"
+POST http://localhost:4000/api/bank_account/open
+content-type: application/json
+
+{
+    "request_id": "1c2715ba-b451-4443-9b04-00a89be8577e",
+    "account_number": "ACC-001",
+    "initial_balance": 1000,
     "status": "active"
 }
 
 ###
+# ========================================
+# CONSULTAS DE CONTA BANCÁRIA
+# ========================================
 
+###
+# Buscar dados de uma conta bancária
+GET http://localhost:4000/api/bank_account/1c2715ba-b451-4443-9b04-00a89be8577e
+
+###
+# Listar transações de uma conta
+GET http://localhost:4000/api/bank_account/c0fa7172-4b8a-4836-9b18-1e2db3656448/transactions
+
+###
+# ========================================
+# OPERAÇÕES BANCÁRIAS
+# ========================================
+
+###
+# Atualizar status da conta bancária
 POST http://localhost:4000/api/bank_account/status
 content-type: application/json
 
@@ -26,7 +67,7 @@ content-type: application/json
 }
 
 ###
-
+# Depositar dinheiro na conta
 POST http://localhost:4000/api/bank_account/deposit
 content-type: application/json
 
@@ -36,7 +77,7 @@ content-type: application/json
 }
 
 ###
-
+# Sacar dinheiro da conta
 POST http://localhost:4000/api/bank_account/withdraw
 content-type: application/json
 

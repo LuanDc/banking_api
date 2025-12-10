@@ -7,20 +7,23 @@ defmodule BankingApi.BankAccounts.Aggregates.BankAccountOpeningRequestTest do
 
   describe "execute/2 - RequestBankAccountOpening" do
     test "creates BankAccountOpeningRequested event when aggregate is new" do
+      request_id = Ecto.UUID.generate()
       id = Ecto.UUID.generate()
       account_number = "TEST-001"
 
       command = %RequestBankAccountOpening{
+        request_id: request_id,
         id: id,
         account_number: account_number,
         initial_balance: 1000,
         status: "active"
       }
 
-      aggregate = %BankAccountOpeningRequest{id: nil}
+      aggregate = %BankAccountOpeningRequest{request_id: nil}
 
       assert %BankAccountOpeningRequested{
                id: ^id,
+               request_id: ^request_id,
                account_number: ^account_number,
                initial_balance: 1000,
                status: "active"
@@ -28,9 +31,11 @@ defmodule BankingApi.BankAccounts.Aggregates.BankAccountOpeningRequestTest do
     end
 
     test "returns error when opening request already exists" do
+      request_id = Ecto.UUID.generate()
       id = Ecto.UUID.generate()
 
       command = %RequestBankAccountOpening{
+        request_id: request_id,
         id: id,
         account_number: "TEST-001",
         initial_balance: 1000,
@@ -38,6 +43,7 @@ defmodule BankingApi.BankAccounts.Aggregates.BankAccountOpeningRequestTest do
       }
 
       aggregate = %BankAccountOpeningRequest{
+        request_id: request_id,
         id: id,
         account_number: "TEST-001",
         initial_balance: 1000,
@@ -52,10 +58,12 @@ defmodule BankingApi.BankAccounts.Aggregates.BankAccountOpeningRequestTest do
   describe "apply/2 - BankAccountOpeningRequested" do
     test "updates aggregate state with event data" do
       id = Ecto.UUID.generate()
+      request_id = Ecto.UUID.generate()
       account_number = "TEST-002"
 
       event = %BankAccountOpeningRequested{
         id: id,
+        request_id: request_id,
         account_number: account_number,
         initial_balance: 2000,
         status: "inactive"
@@ -67,6 +75,7 @@ defmodule BankingApi.BankAccounts.Aggregates.BankAccountOpeningRequestTest do
 
       assert %BankAccountOpeningRequest{
                id: ^id,
+               request_id: ^request_id,
                account_number: ^account_number,
                initial_balance: 2000,
                status: "inactive"

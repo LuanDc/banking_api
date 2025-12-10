@@ -3,6 +3,7 @@ defmodule BankingApi.BankAccounts.Supervisor do
 
   alias BankingApi.BankAccounts.ProcessManager.BankAccountOpening
   alias BankingApi.BankAccounts.Projectors.BankAccount
+  alias BankingApi.BankAccounts.Projectors.BankAccountOpeningRequest
 
   def start_link(arg) do
     Supervisor.start_link(__MODULE__, arg, name: __MODULE__)
@@ -12,6 +13,7 @@ defmodule BankingApi.BankAccounts.Supervisor do
     Supervisor.init(
       [
         BankAccount,
+        BankAccountOpeningRequest,
         BankAccountOpening
       ],
       strategy: :one_for_one

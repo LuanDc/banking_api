@@ -25,7 +25,7 @@ defmodule BankingApi.Router do
 
   identify(BankAccountOpeningRequest,
     prefix: "bank-account-opening-request-",
-    by: :id
+    by: :request_id
   )
 
   dispatch([RequestBankAccountOpening], to: BankAccountOpeningRequest)

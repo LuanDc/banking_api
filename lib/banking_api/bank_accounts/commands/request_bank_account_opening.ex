@@ -1,8 +1,9 @@
 defmodule BankingApi.BankAccounts.Commands.RequestBankAccountOpening do
-  defstruct [:id, :account_number, :initial_balance, :status]
+  defstruct [:request_id, :id, :account_number, :initial_balance, :status]
   use ExConstructor
   use Vex.Struct
 
+  validates(:request_id, uuid: true, presence: [message: "can't be empty"])
   validates(:id, uuid: true)
 
   validates(:account_number,
@@ -14,7 +15,7 @@ defmodule BankingApi.BankAccounts.Commands.RequestBankAccountOpening do
 
   validates(:status, inclusion: ["active", "inactive"])
 
-  def assign_id(%__MODULE__{} = request, id) do
-    %__MODULE__{request | id: id}
+  def assign_id(%__MODULE__{} = command, id) do
+    %__MODULE__{command | id: id}
   end
 end

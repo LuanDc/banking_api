@@ -6,10 +6,10 @@ defmodule BankingApiWeb.Api.OpenBankAccountController do
   action_fallback BankingApiWeb.FallbackController
 
   def create(conn, params) do
-    with :ok <- BankAccounts.open_bank_account(params) do
+    with {:ok, request} <- BankAccounts.open_bank_account(params) do
       conn
       |> put_status(201)
-      |> text("")
+      |> json(request)
     else
       error -> parse_error(conn, error)
     end
@@ -31,6 +31,12 @@ defmodule BankingApiWeb.Api.OpenBankAccountController do
     conn
     |> put_status(422)
     |> json(%{"error" => "Account number already taken"})
+  end
+
+  defp parse_error(conn, {:error, :bank_account_opening_already_requested}) do
+    conn
+    |> put_status(409)
+    |> json(%{"error" => "Bank account opening already requested"})
   end
 
   defp parse_error(_conn, error) do

@@ -5,6 +5,7 @@ defmodule BankingApi.BankAccounts do
   alias BankingApi.BankAccounts.Commands.WithdrawMoney
   alias BankingApi.BankAccounts.Commands.UpdateBankAccountStatus
   alias BankingApi.BankAccounts.Projections.BankAccount
+  alias BankingApi.BankAccounts.Projections.BankAccountOpeningRequest
   alias BankingApi.BankAccounts.Projections.Transaction
   alias BankingApi.Repo
   import Ecto.Query
@@ -29,6 +30,13 @@ defmodule BankingApi.BankAccounts do
 
   def get_by!(filters) when is_list(filters) do
     Repo.get_by!(BankAccount, filters)
+  end
+
+  def get_opening_request(request_id) when is_bitstring(request_id) do
+    case Repo.get(BankAccountOpeningRequest, request_id) do
+      nil -> {:error, :not_found}
+      request -> {:ok, request}
+    end
   end
 
   def list_transactions(bank_account_id, opts \\ []) do
@@ -79,7 +87,9 @@ defmodule BankingApi.BankAccounts do
       |> RequestBankAccountOpening.new()
       |> RequestBankAccountOpening.assign_id(id)
 
-    BankingApiApp.dispatch(command, consistency: :strong)
+    with :ok <- BankingApiApp.dispatch(command, consistency: :strong) do
+      get_opening_request(command.request_id)
+    end
   end
 
   def deposit(params) do

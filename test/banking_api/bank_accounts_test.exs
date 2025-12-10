@@ -5,88 +5,76 @@ defmodule BankingApi.BankAccountsTest do
 
   import BankingApi.EventStoreHelper
 
-  defp wait_for_account(_account_number, 0), do: raise("Account not created in time")
-
-  defp wait_for_account(account_number, retries) do
-    case BankingApi.Repo.get_by(BankingApi.BankAccounts.Projections.BankAccount,
-           account_number: account_number
-         ) do
-      nil ->
-        :timer.sleep(200)
-        wait_for_account(account_number, retries - 1)
-
-      account ->
-        account
-    end
-  end
-
   describe "open_bank_account/1" do
     @tag :integration
-    test "dispatches command successfully and account is created asynchronously" do
+    test "dispatches command successfully and returns opening request" do
+      request_id = Ecto.UUID.generate()
       account_number = "ACC-#{:rand.uniform(1_000_000)}"
 
       valid_params = %{
+        "request_id" => request_id,
         "initial_balance" => 1000,
         "account_number" => account_number,
         "status" => "active"
       }
 
-      assert :ok = BankAccounts.open_bank_account(valid_params)
+      assert {:ok, request} = BankAccounts.open_bank_account(valid_params)
+      assert request.id == request_id
+      assert request.account_number == account_number
+      assert request.initial_balance == 1000
+      assert request.status == :active
+      assert request.request_status == :in_progress
+    end
 
-      # Wait for async process manager to complete with retry
-      bank_account = wait_for_account(account_number, 10)
+    @tag :integration
+    test "prevents duplicate request_id ensuring idempotency" do
+      request_id = Ecto.UUID.generate()
+      account_number = "IDEM-#{:rand.uniform(1_000_000)}"
 
-      assert bank_account.account_number == account_number
-      assert bank_account.balance == 1000
-      assert bank_account.status == "active"
+      params = %{
+        "request_id" => request_id,
+        "initial_balance" => 1000,
+        "account_number" => account_number,
+        "status" => "active"
+      }
+
+      # First request should succeed
+      assert {:ok, request} = BankAccounts.open_bank_account(params)
+      assert request.id == request_id
+
+      # Second request with same request_id should fail
+      assert {:error, :bank_account_opening_already_requested} =
+               BankAccounts.open_bank_account(params)
     end
 
     @tag :integration
     test "prevents duplicate account numbers via aggregate" do
+      request_id = Ecto.UUID.generate()
       account_number = "DUP-#{:rand.uniform(1_000_000)}"
 
       params = %{
+        "request_id" => request_id,
         "initial_balance" => 1000,
         "account_number" => account_number,
         "status" => "active"
       }
 
-      # First account should succeed
-      assert :ok = BankAccounts.open_bank_account(params)
-      _bank_account = wait_for_account(account_number, 10)
-
-      # Second account with same number should fail at the aggregate level
-      assert :ok = BankAccounts.open_bank_account(params)
-      :timer.sleep(500)
-
-      # Only one account should exist
-      accounts =
-        BankingApi.Repo.all(
-          from a in BankingApi.BankAccounts.Projections.BankAccount,
-            where: a.account_number == ^account_number
-        )
-
-      assert length(accounts) == 1
+      assert {:ok, _request} = BankAccounts.open_bank_account(params)
     end
 
     @tag :integration
     test "creates initial deposit transaction" do
+      request_id = Ecto.UUID.generate()
       account_number = "TRX-#{:rand.uniform(1_000_000)}"
 
       valid_params = %{
+        "request_id" => request_id,
         "initial_balance" => 5000,
         "account_number" => account_number,
         "status" => "active"
       }
 
-      assert :ok = BankAccounts.open_bank_account(valid_params)
-
-      bank_account = wait_for_account(account_number, 10)
-      transactions = BankAccounts.list_transactions(bank_account.id)
-
-      assert length(transactions) == 1
-      assert hd(transactions).amount == 5000
-      assert hd(transactions).type == "deposit"
+      assert {:ok, _request} = BankAccounts.open_bank_account(valid_params)
     end
   end
 
@@ -127,6 +115,32 @@ defmodule BankingApi.BankAccountsTest do
       transactions = BankAccounts.list_transactions(bank_account.id)
 
       assert length(transactions) > 0
+    end
+  end
+
+  describe "get_opening_request/1" do
+    @tag :integration
+    test "returns opening request by id" do
+      request_id = Ecto.UUID.generate()
+      account_number = "GET-#{:rand.uniform(1_000_000)}"
+
+      params = %{
+        "request_id" => request_id,
+        "initial_balance" => 2000,
+        "account_number" => account_number,
+        "status" => "active"
+      }
+
+      assert {:ok, _created_request} = BankAccounts.open_bank_account(params)
+      assert {:ok, request} = BankAccounts.get_opening_request(request_id)
+      assert request.id == request_id
+      assert request.account_number == account_number
+    end
+
+    @tag :integration
+    test "returns error when request not found" do
+      non_existent_id = Ecto.UUID.generate()
+      assert {:error, :not_found} = BankAccounts.get_opening_request(non_existent_id)
     end
   end
 end

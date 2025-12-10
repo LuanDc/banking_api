@@ -7,7 +7,8 @@ defmodule BankingApiWeb.Api.OpenBankAccountControllerTest do
       params = %{
         "initial_balance" => 1000,
         "account_number" => "0001-01",
-        "status" => "active"
+        "status" => "active",
+        "request_id" => Ecto.UUID.generate()
       }
 
       conn = post(conn, ~p"/api/bank_account/open", params)
@@ -25,11 +26,9 @@ defmodule BankingApiWeb.Api.OpenBankAccountControllerTest do
 
       conn = post(conn, ~p"/api/bank_account/open", invalid_params)
 
-      assert json_response(conn, 400) == %{
-               "error" => %{
-                 "account_number" => ["can't be empty"]
-               }
-             }
+      response = json_response(conn, 400)
+      assert response["error"]["account_number"] == ["can't be empty"]
+      assert response["error"]["request_id"] == ["must be valid", "can't be empty"]
     end
 
     @tag :web
@@ -42,11 +41,10 @@ defmodule BankingApiWeb.Api.OpenBankAccountControllerTest do
 
       conn = post(conn, ~p"/api/bank_account/open", invalid_params)
 
-      assert json_response(conn, 400) == %{
-               "error" => %{
-                 "account_number" => ["is not a valid string"]
-               }
-             }
+      response = json_response(conn, 400)
+      assert response["error"]["account_number"] == ["is not a valid string"]
+      assert response["error"]["request_id"] == ["must be valid", "can't be empty"]
+
     end
 
     @tag :web
@@ -59,11 +57,10 @@ defmodule BankingApiWeb.Api.OpenBankAccountControllerTest do
 
       conn = post(conn, ~p"/api/bank_account/open", invalid_params)
 
-      assert json_response(conn, 400) == %{
-               "error" => %{
-                 "initial_balance" => ["must be a number greater than or equal to 0"]
-               }
-             }
+      response = json_response(conn, 400)
+      assert response["error"]["initial_balance"] == ["must be a number greater than or equal to 0"]
+      assert response["error"]["request_id"] == ["must be valid", "can't be empty"]
+
     end
 
     @tag :web
@@ -76,11 +73,10 @@ defmodule BankingApiWeb.Api.OpenBankAccountControllerTest do
 
       conn = post(conn, ~p"/api/bank_account/open", invalid_params)
 
-      assert json_response(conn, 400) == %{
-               "error" => %{
-                 "initial_balance" => ["must be a number greater than or equal to 0"]
-               }
-             }
+      response = json_response(conn, 400)
+      assert response["error"]["initial_balance"] == ["must be a number greater than or equal to 0"]
+      assert response["error"]["request_id"] == ["must be valid", "can't be empty"]
+
     end
 
     @tag :web
@@ -93,11 +89,10 @@ defmodule BankingApiWeb.Api.OpenBankAccountControllerTest do
 
       conn = post(conn, ~p"/api/bank_account/open", invalid_params)
 
-      assert json_response(conn, 400) == %{
-               "error" => %{
-                 "initial_balance" => ["must be a number greater than or equal to 0"]
-               }
-             }
+      response = json_response(conn, 400)
+      assert response["error"]["initial_balance"] == ["must be a number greater than or equal to 0"]
+      assert response["error"]["request_id"] == ["must be valid", "can't be empty"]
+
     end
 
     @tag :web
@@ -110,11 +105,10 @@ defmodule BankingApiWeb.Api.OpenBankAccountControllerTest do
 
       conn = post(conn, ~p"/api/bank_account/open", invalid_params)
 
-      assert json_response(conn, 400) == %{
-               "error" => %{
-                 "status" => ["must be one of [\"active\", \"inactive\"]"]
-               }
-             }
+      response = json_response(conn, 400)
+      assert response["error"]["status"] == ["must be one of [\"active\", \"inactive\"]"]
+      assert response["error"]["request_id"] == ["must be valid", "can't be empty"]
+
     end
 
     @tag :web
@@ -127,11 +121,10 @@ defmodule BankingApiWeb.Api.OpenBankAccountControllerTest do
 
       conn = post(conn, ~p"/api/bank_account/open", invalid_params)
 
-      assert json_response(conn, 400) == %{
-               "error" => %{
-                 "status" => ["must be one of [\"active\", \"inactive\"]"]
-               }
-             }
+      response = json_response(conn, 400)
+      assert response["error"]["status"] == ["must be one of [\"active\", \"inactive\"]"]
+      assert response["error"]["request_id"] == ["must be valid", "can't be empty"]
+
     end
 
     @tag :web
@@ -144,11 +137,10 @@ defmodule BankingApiWeb.Api.OpenBankAccountControllerTest do
 
       conn = post(conn, ~p"/api/bank_account/open", invalid_params)
 
-      assert json_response(conn, 400) == %{
-               "error" => %{
-                 "status" => ["must be one of [\"active\", \"inactive\"]"]
-               }
-             }
+      response = json_response(conn, 400)
+      assert response["error"]["status"] == ["must be one of [\"active\", \"inactive\"]"]
+      assert response["error"]["request_id"] == ["must be valid", "can't be empty"]
+
     end
 
     @tag :web
@@ -159,12 +151,14 @@ defmodule BankingApiWeb.Api.OpenBankAccountControllerTest do
       account_number_2 = "ACC-#{:rand.uniform(1_000_000)}"
 
       params1 = %{
+        "request_id" => Ecto.UUID.generate(),
         "initial_balance" => 1000,
         "account_number" => account_number_1,
         "status" => "active"
       }
 
       params2 = %{
+        "request_id" => Ecto.UUID.generate(),
         "initial_balance" => 2000,
         "account_number" => account_number_2,
         "status" => "active"
@@ -175,6 +169,26 @@ defmodule BankingApiWeb.Api.OpenBankAccountControllerTest do
 
       conn2 = post(conn, ~p"/api/bank_account/open", params2)
       assert response(conn2, 201)
+    end
+
+    @tag :web
+    test "error: returns error when bank account opening already requested with same request_id",
+         %{conn: conn} do
+      request_id = Ecto.UUID.generate()
+
+      params = %{
+        "request_id" => request_id,
+        "initial_balance" => 1000,
+        "account_number" => "ACC-#{:rand.uniform(1_000_000)}",
+        "status" => "active"
+      }
+
+      conn1 = post(conn, ~p"/api/bank_account/open", params)
+      assert response(conn1, 201)
+
+      conn2 = post(conn, ~p"/api/bank_account/open", params)
+      response = json_response(conn2, 409)
+      assert response["error"] == "Bank account opening already requested"
     end
   end
 end
