@@ -7,6 +7,7 @@ defmodule BankingApi.BankAccounts.Projectors.BankAccountOpeningRequest do
 
   alias BankingApi.BankAccounts.Events.BankAccountOpeningRequested
   alias BankingApi.BankAccounts.Events.BankAccountOpeningFailed
+  alias BankingApi.BankAccounts.Events.BankAccountOpeningCompleted
   alias BankingApi.BankAccounts.Projections.BankAccountOpeningRequest
 
   def project_bank_account_opening_requested(multi, %BankAccountOpeningRequested{
@@ -48,16 +49,29 @@ defmodule BankingApi.BankAccounts.Projectors.BankAccountOpeningRequest do
   end
 
   def project_bank_account_opening_failed(multi, %BankAccountOpeningFailed{
-        request_id: request_id,
+        id: id,
         error_reason: error_reason
       }) do
     Ecto.Multi.update_all(
       multi,
       :bank_account_opening_request_failed,
-      from(r in BankAccountOpeningRequest, where: r.id == ^request_id),
+      from(r in BankAccountOpeningRequest, where: r.id == ^id),
       set: [
         request_status: :failed,
         error: error_reason
+      ]
+    )
+  end
+
+  def project_bank_account_opening_completed(multi, %BankAccountOpeningCompleted{
+        bank_account_id: bank_account_id
+      }) do
+    Ecto.Multi.update_all(
+      multi,
+      :bank_account_opening_request_completed,
+      from(r in BankAccountOpeningRequest, where: r.id == ^bank_account_id),
+      set: [
+        request_status: :completed
       ]
     )
   end
@@ -73,5 +87,11 @@ defmodule BankingApi.BankAccounts.Projectors.BankAccountOpeningRequest do
     %BankAccountOpeningFailed{} = event,
     _metadata,
     fn multi -> project_bank_account_opening_failed(multi, event) end
+  )
+
+  project(
+    %BankAccountOpeningCompleted{} = event,
+    _metadata,
+    fn multi -> project_bank_account_opening_completed(multi, event) end
   )
 end

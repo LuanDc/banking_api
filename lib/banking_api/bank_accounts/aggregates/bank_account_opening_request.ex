@@ -2,6 +2,7 @@ defmodule BankingApi.BankAccounts.Aggregates.BankAccountOpeningRequest do
   defstruct [
     :request_id,
     :id,
+    :bank_account_id,
     :account_number,
     :initial_balance,
     :status,
@@ -12,8 +13,10 @@ defmodule BankingApi.BankAccounts.Aggregates.BankAccountOpeningRequest do
   alias BankingApi.BankAccounts.Aggregates.BankAccountOpeningRequest
   alias BankingApi.BankAccounts.Commands.RequestBankAccountOpening
   alias BankingApi.BankAccounts.Commands.MarkBankAccountOpeningAsFailed
+  alias BankingApi.BankAccounts.Commands.MarkBankAccountOpeningAsCompleted
   alias BankingApi.BankAccounts.Events.BankAccountOpeningRequested
   alias BankingApi.BankAccounts.Events.BankAccountOpeningFailed
+  alias BankingApi.BankAccounts.Events.BankAccountOpeningCompleted
 
   alias Commanded.Aggregates.Aggregate
 
@@ -48,11 +51,11 @@ defmodule BankingApi.BankAccounts.Aggregates.BankAccountOpeningRequest do
 
   @impl Aggregate
   def execute(
-        %BankAccountOpeningRequest{request_id: request_id},
-        %MarkBankAccountOpeningAsFailed{request_id: request_id, error_reason: error_reason}
+        %BankAccountOpeningRequest{},
+        %MarkBankAccountOpeningAsFailed{id: id, error_reason: error_reason}
       ) do
     %BankAccountOpeningFailed{
-      request_id: request_id,
+      id: id,
       error_reason: error_reason,
       date: DateTime.utc_now()
     }
@@ -61,6 +64,27 @@ defmodule BankingApi.BankAccounts.Aggregates.BankAccountOpeningRequest do
   @impl Aggregate
   def execute(%BankAccountOpeningRequest{}, %MarkBankAccountOpeningAsFailed{}) do
     {:error, :request_not_found}
+  end
+
+  @impl Aggregate
+  def execute(
+        %BankAccountOpeningRequest{
+          request_id: request_id,
+          request_status: :in_progress,
+          id: bank_account_id
+        },
+        %MarkBankAccountOpeningAsCompleted{request_id: request_id}
+      ) do
+    %BankAccountOpeningCompleted{
+      request_id: request_id,
+      bank_account_id: bank_account_id,
+      date: DateTime.utc_now()
+    }
+  end
+
+  @impl Aggregate
+  def execute(%BankAccountOpeningRequest{}, %MarkBankAccountOpeningAsCompleted{}) do
+    {:error, :request_not_found_or_not_in_progress}
   end
 
   @impl Aggregate
@@ -76,6 +100,7 @@ defmodule BankingApi.BankAccounts.Aggregates.BankAccountOpeningRequest do
     %BankAccountOpeningRequest{
       request
       | id: id,
+        bank_account_id: id,
         request_id: request_id,
         account_number: account_number,
         initial_balance: initial_balance,
@@ -92,6 +117,14 @@ defmodule BankingApi.BankAccounts.Aggregates.BankAccountOpeningRequest do
       request
       | request_status: :failed,
         error: error_reason
+    }
+  end
+
+  @impl Aggregate
+  def apply(%BankAccountOpeningRequest{} = request, %BankAccountOpeningCompleted{}) do
+    %BankAccountOpeningRequest{
+      request
+      | request_status: :completed
     }
   end
 end

@@ -1,7 +1,7 @@
 defmodule BankingApi.BankAccounts.Events.BankAccountOpeningFailed do
   @derive Jason.Encoder
   defstruct [
-    :request_id,
+    :id,
     :error_reason,
     :date
   ]

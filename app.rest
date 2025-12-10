@@ -24,7 +24,7 @@ content-type: application/json
 # - Permite fazer polling para verificar o status da solicitação
 # - Se houver erro, o campo "error" conterá a mensagem de erro
 # - Se sucesso, o campo "request_status" será "completed"
-GET http://localhost:4000/api/bank_account_opening_request/f9654bb3-31ae-4d28-9371-faec4ce54ebc
+GET http://localhost:4000/api/bank_account_opening_request/86990fc4-567d-4237-9c71-d5b24d9b498e
 
 ###
 # PASSO 3 (OPCIONAL): Testar idempotência
@@ -62,11 +62,11 @@ content-type: application/json
 
 ###
 # Buscar dados de uma conta bancária
-GET http://localhost:4000/api/bank_account/591d091d-53ba-491f-8904-20f6ee1cecb1
+GET http://localhost:4000/api/bank_account/47208278-8733-4226-89c6-9eb93fc62f53
 
 ###
 # Listar transações de uma conta
-GET http://localhost:4000/api/bank_account/c0fa7172-4b8a-4836-9b18-1e2db3656448/transactions
+GET http://localhost:4000/api/bank_account/47208278-8733-4226-89c6-9eb93fc62f53
 
 ###
 # ========================================

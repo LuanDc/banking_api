@@ -7,6 +7,7 @@ defmodule BankingApi.Router do
 
   alias BankingApi.BankAccounts.Commands.DepositMoney
   alias BankingApi.BankAccounts.Commands.MarkBankAccountOpeningAsFailed
+  alias BankingApi.BankAccounts.Commands.MarkBankAccountOpeningAsCompleted
   alias BankingApi.BankAccounts.Commands.OpenBankAccount
   alias BankingApi.BankAccounts.Commands.RequestBankAccountOpening
   alias BankingApi.BankAccounts.Commands.ReserveAccountNumber
@@ -29,7 +30,8 @@ defmodule BankingApi.Router do
     by: :request_id
   )
 
-  dispatch([RequestBankAccountOpening, MarkBankAccountOpeningAsFailed],
+  dispatch(
+    [RequestBankAccountOpening, MarkBankAccountOpeningAsFailed, MarkBankAccountOpeningAsCompleted],
     to: BankAccountOpeningRequest
   )
 
