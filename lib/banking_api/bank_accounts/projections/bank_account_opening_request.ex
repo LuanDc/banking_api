@@ -4,6 +4,7 @@ defmodule BankingApi.BankAccounts.Projections.BankAccountOpeningRequest do
   @primary_key {:id, :binary_id, autogenerate: false}
   @derive {Jason.Encoder, except: [:__meta__]}
   schema "bank_account_opening_requests" do
+    field :request_id, :binary_id
     field :account_number, :string
     field :initial_balance, :integer
     field :status, Ecto.Enum, values: [:active, :inactive]

@@ -6,10 +6,11 @@ defmodule BankingApi.BankAccounts.Projectors.BankAccountOpeningRequest do
     consistency: :strong
 
   alias BankingApi.BankAccounts.Events.BankAccountOpeningRequested
+  alias BankingApi.BankAccounts.Events.BankAccountOpeningFailed
   alias BankingApi.BankAccounts.Projections.BankAccountOpeningRequest
 
   def project_bank_account_opening_requested(multi, %BankAccountOpeningRequested{
-        id: _id,
+        id: id,
         request_id: request_id,
         account_number: account_number,
         initial_balance: initial_balance,
@@ -18,7 +19,8 @@ defmodule BankingApi.BankAccounts.Projectors.BankAccountOpeningRequest do
         date: date
       }) do
     Ecto.Multi.insert(multi, :bank_account_opening_request, %BankAccountOpeningRequest{
-      id: request_id,
+      id: id,
+      request_id: request_id,
       account_number: account_number,
       initial_balance: initial_balance,
       status: parse_status(status),
@@ -45,10 +47,31 @@ defmodule BankingApi.BankAccounts.Projectors.BankAccountOpeningRequest do
     end
   end
 
+  def project_bank_account_opening_failed(multi, %BankAccountOpeningFailed{
+        request_id: request_id,
+        error_reason: error_reason
+      }) do
+    Ecto.Multi.update_all(
+      multi,
+      :bank_account_opening_request_failed,
+      from(r in BankAccountOpeningRequest, where: r.id == ^request_id),
+      set: [
+        request_status: :failed,
+        error: error_reason
+      ]
+    )
+  end
+
   # Commanded projections
   project(
     %BankAccountOpeningRequested{} = event,
     _metadata,
     fn multi -> project_bank_account_opening_requested(multi, event) end
+  )
+
+  project(
+    %BankAccountOpeningFailed{} = event,
+    _metadata,
+    fn multi -> project_bank_account_opening_failed(multi, event) end
   )
 end

@@ -5,18 +5,19 @@ defmodule BankingApi.BankAccounts.ProcessManager.BankAccountOpening do
     consistency: :strong
 
   @derive Jason.Encoder
-  defstruct [:initial_balance, :status, :account_number]
+  defstruct [:initial_balance, :status, :account_number, :request_id]
 
   require Logger
 
   alias BankingApi.BankAccounts.Commands.OpenBankAccount
   alias BankingApi.BankAccounts.Commands.ReserveAccountNumber
+  alias BankingApi.BankAccounts.Commands.MarkBankAccountOpeningAsFailed
   alias BankingApi.BankAccounts.Events.AccountNumberReserved
   alias BankingApi.BankAccounts.Events.BankAccountOpeningRequested
   alias BankingApi.BankAccounts.ProcessManager.BankAccountOpening
 
   def interested?(%BankAccountOpeningRequested{id: id}), do: {:start, id}
-  def interested?(%AccountNumberReserved{bank_account_id: id}), do: {:stop, id}
+  def interested?(%AccountNumberReserved{bank_account_id: id}), do: {:continue, id}
 
   def handle(
         %BankAccountOpening{},
@@ -52,6 +53,7 @@ defmodule BankingApi.BankAccounts.ProcessManager.BankAccountOpening do
   def apply(
         %BankAccountOpening{} = state,
         %BankAccountOpeningRequested{
+          request_id: request_id,
           account_number: account_number,
           initial_balance: initial_balance,
           status: status
@@ -59,7 +61,8 @@ defmodule BankingApi.BankAccounts.ProcessManager.BankAccountOpening do
       ) do
     %BankAccountOpening{
       state
-      | account_number: account_number,
+      | request_id: request_id,
+        account_number: account_number,
         initial_balance: initial_balance,
         status: status
     }
@@ -74,12 +77,29 @@ defmodule BankingApi.BankAccounts.ProcessManager.BankAccountOpening do
     {:stop, :too_many_failures}
   end
 
-  def error({:error, :account_number_already_reserved}, _command_or_event, _failure_context) do
+  def error(
+        {:error, :account_number_already_reserved},
+        _command_or_event,
+        %{state: %{request_id: request_id}}
+      ) do
     Logger.alert(fn ->
-      "#{__MODULE__} account number already reserved. Skipping further processing."
+      "#{__MODULE__} account number already reserved. Marking request as failed."
     end)
 
-    :skip
+    %MarkBankAccountOpeningAsFailed{
+      request_id: request_id,
+      error_reason: inspect(:account_number_already_reserved)
+    }
+  end
+
+  def error({:error, reason}, _command_or_event, %{state: %{request_id: request_id}})
+      when not is_nil(request_id) do
+    Logger.error(fn -> "#{__MODULE__} encountered an error: " <> inspect(reason) end)
+
+    %MarkBankAccountOpeningAsFailed{
+      request_id: request_id,
+      error_reason: inspect(reason)
+    }
   end
 
   def error(error, _command_or_event, _failure_context) do

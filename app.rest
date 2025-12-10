@@ -13,16 +13,18 @@ content-type: application/json
 
 {
     "request_id": "{{$guid}}",
-    "account_number": "ACC-{{$randomInt}}",
+    "account_number": "ACC-03240",
     "initial_balance": 1000,
     "status": "active"
 }
 
-###a
+###
 # PASSO 2: Consultar status da solicitação de abertura
 # - Use o request_id (id) retornado no passo anterior
 # - Permite fazer polling para verificar o status da solicitação
-GET http://localhost:4000/api/bank_account_opening_request/1c2715ba-b451-4443-9b04-00a89be8577e
+# - Se houver erro, o campo "error" conterá a mensagem de erro
+# - Se sucesso, o campo "request_status" será "completed"
+GET http://localhost:4000/api/bank_account_opening_request/f9654bb3-31ae-4d28-9371-faec4ce54ebc
 
 ###
 # PASSO 3 (OPCIONAL): Testar idempotência
@@ -39,13 +41,28 @@ content-type: application/json
 }
 
 ###
+# PASSO 4 (OPCIONAL): Testar fluxo de erro - número de conta duplicado
+# - Execute duas vezes com números de conta diferentes
+# - Na segunda requisição, use um número de conta que já existe
+# - Consulte o status para verificar o campo "error" com a mensagem customizada
+POST http://localhost:4000/api/bank_account/open
+content-type: application/json
+
+{
+    "request_id": "{{$guid}}",
+    "account_number": "ACC-001",
+    "initial_balance": 500,
+    "status": "active"
+}
+
+###
 # ========================================
 # CONSULTAS DE CONTA BANCÁRIA
 # ========================================
 
 ###
 # Buscar dados de uma conta bancária
-GET http://localhost:4000/api/bank_account/1c2715ba-b451-4443-9b04-00a89be8577e
+GET http://localhost:4000/api/bank_account/591d091d-53ba-491f-8904-20f6ee1cecb1
 
 ###
 # Listar transações de uma conta

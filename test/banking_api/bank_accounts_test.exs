@@ -19,7 +19,7 @@ defmodule BankingApi.BankAccountsTest do
       }
 
       assert {:ok, request} = BankAccounts.open_bank_account(valid_params)
-      assert request.id == request_id
+      assert request.request_id == request_id
       assert request.account_number == account_number
       assert request.initial_balance == 1000
       assert request.status == :active
@@ -40,7 +40,7 @@ defmodule BankingApi.BankAccountsTest do
 
       # First request should succeed
       assert {:ok, request} = BankAccounts.open_bank_account(params)
-      assert request.id == request_id
+      assert request.request_id == request_id
 
       # Second request with same request_id should fail
       assert {:error, :bank_account_opening_already_requested} =
@@ -133,7 +133,7 @@ defmodule BankingApi.BankAccountsTest do
 
       assert {:ok, _created_request} = BankAccounts.open_bank_account(params)
       assert {:ok, request} = BankAccounts.get_opening_request(request_id)
-      assert request.id == request_id
+      assert request.request_id == request_id
       assert request.account_number == account_number
     end
 

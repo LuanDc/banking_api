@@ -4,6 +4,7 @@ defmodule BankingApi.Repo.Migrations.CreateBankAccountOpeningRequestsTable do
   def change do
     create table(:bank_account_opening_requests, primary_key: false) do
       add :id, :uuid, primary_key: true
+      add :request_id, :uuid, null: false
       add :account_number, :string, null: false
       add :initial_balance, :integer, null: false
       add :status, :string, null: false
@@ -14,5 +15,6 @@ defmodule BankingApi.Repo.Migrations.CreateBankAccountOpeningRequestsTable do
 
     create index(:bank_account_opening_requests, [:account_number])
     create index(:bank_account_opening_requests, [:request_status])
+    create index(:bank_account_opening_requests, [:request_id])
   end
 end

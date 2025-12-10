@@ -33,7 +33,7 @@ defmodule BankingApi.BankAccounts do
   end
 
   def get_opening_request(request_id) when is_bitstring(request_id) do
-    case Repo.get(BankAccountOpeningRequest, request_id) do
+    case Repo.get_by(BankAccountOpeningRequest, request_id: request_id) do
       nil -> {:error, :not_found}
       request -> {:ok, request}
     end

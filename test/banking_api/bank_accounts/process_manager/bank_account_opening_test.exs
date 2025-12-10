@@ -19,7 +19,7 @@ defmodule BankingApi.BankAccounts.ProcessManager.BankAccountOpeningTest do
       bank_account_id = Ecto.UUID.generate()
       event = %AccountNumberReserved{bank_account_id: bank_account_id, account_number: "PM-001"}
 
-      assert {:stop, ^bank_account_id} = BankAccountOpening.interested?(event)
+      assert {:continue, ^bank_account_id} = BankAccountOpening.interested?(event)
     end
   end
 
@@ -131,7 +131,8 @@ defmodule BankingApi.BankAccounts.ProcessManager.BankAccountOpeningTest do
       command = %ReserveAccountNumber{}
       failure_context = %{context: %{failures: 2}}
 
-      assert {:stop, :too_many_failures} = BankAccountOpening.error(error, command, failure_context)
+      assert {:stop, :too_many_failures} =
+               BankAccountOpening.error(error, command, failure_context)
     end
 
     test "skips on unknown errors" do
