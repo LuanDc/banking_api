@@ -2,16 +2,28 @@ defmodule BankingApi.BankAccountsTest do
   use BankingApi.DataCase
 
   alias BankingApi.BankAccounts
-  alias BankingApi.BankAccounts.Projections.BankAccount
-  alias BankingApi.BankAccounts.Projections.Transaction
-  alias BankingApi.Repo
 
   import BankingApi.EventStoreHelper
 
+  defp wait_for_account(_account_number, 0), do: raise("Account not created in time")
+
+  defp wait_for_account(account_number, retries) do
+    case BankingApi.Repo.get_by(BankingApi.BankAccounts.Projections.BankAccount,
+           account_number: account_number
+         ) do
+      nil ->
+        :timer.sleep(200)
+        wait_for_account(account_number, retries - 1)
+
+      account ->
+        account
+    end
+  end
+
   describe "open_bank_account/1" do
     @tag :integration
-    test "read model is accessible with correct values" do
-      account_number = Ecto.UUID.generate()
+    test "dispatches command successfully and account is created asynchronously" do
+      account_number = "ACC-#{:rand.uniform(1_000_000)}"
 
       valid_params = %{
         "initial_balance" => 1000,
@@ -19,17 +31,62 @@ defmodule BankingApi.BankAccountsTest do
         "status" => "active"
       }
 
-      assert {:ok, %BankAccount{} = bank_account} = BankAccounts.open_bank_account(valid_params)
+      assert :ok = BankAccounts.open_bank_account(valid_params)
 
-      assert bank_account.balance == 1000
+      # Wait for async process manager to complete with retry
+      bank_account = wait_for_account(account_number, 10)
+
       assert bank_account.account_number == account_number
+      assert bank_account.balance == 1000
+      assert bank_account.status == "active"
+    end
 
-      transaction = Repo.get_by!(Transaction, bank_account_id: bank_account.id)
+    @tag :integration
+    test "prevents duplicate account numbers via aggregate" do
+      account_number = "DUP-#{:rand.uniform(1_000_000)}"
 
-      refute is_nil(transaction)
+      params = %{
+        "initial_balance" => 1000,
+        "account_number" => account_number,
+        "status" => "active"
+      }
 
-      assert transaction.amount == 1000
-      assert transaction.type == "deposit"
+      # First account should succeed
+      assert :ok = BankAccounts.open_bank_account(params)
+      _bank_account = wait_for_account(account_number, 10)
+
+      # Second account with same number should fail at the aggregate level
+      assert :ok = BankAccounts.open_bank_account(params)
+      :timer.sleep(500)
+
+      # Only one account should exist
+      accounts =
+        BankingApi.Repo.all(
+          from a in BankingApi.BankAccounts.Projections.BankAccount,
+            where: a.account_number == ^account_number
+        )
+
+      assert length(accounts) == 1
+    end
+
+    @tag :integration
+    test "creates initial deposit transaction" do
+      account_number = "TRX-#{:rand.uniform(1_000_000)}"
+
+      valid_params = %{
+        "initial_balance" => 5000,
+        "account_number" => account_number,
+        "status" => "active"
+      }
+
+      assert :ok = BankAccounts.open_bank_account(valid_params)
+
+      bank_account = wait_for_account(account_number, 10)
+      transactions = BankAccounts.list_transactions(bank_account.id)
+
+      assert length(transactions) == 1
+      assert hd(transactions).amount == 5000
+      assert hd(transactions).type == "deposit"
     end
   end
 

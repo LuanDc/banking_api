@@ -24,13 +24,18 @@ defmodule BankingApi.BankAccounts.Aggregates.BankAccount do
   @impl Aggregate
   def execute(
         %BankAccount{account_number: nil},
-        %OpenBankAccount{id: id, account_number: account_number, initial_balance: initial_balance}
+        %OpenBankAccount{
+          id: id,
+          account_number: account_number,
+          initial_balance: initial_balance,
+          status: status
+        }
       ) do
     %BankAccountOpened{
       id: id,
       account_number: account_number,
       initial_balance: initial_balance,
-      status: "active",
+      status: status,
       date: DateTime.utc_now()
     }
   end

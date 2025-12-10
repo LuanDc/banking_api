@@ -1,5 +1,5 @@
 ###
-GET http://localhost:4000/api/bank_account/c0fa7172-4b8a-4836-9b18-1e2db3656448
+GET http://localhost:4000/api/bank_account/da1a7fb8-8449-4afe-b675-4bc86539eb62
 
 ###
 GET http://localhost:4000/api/bank_account/c0fa7172-4b8a-4836-9b18-1e2db3656448/transactions
@@ -10,7 +10,7 @@ POST http://localhost:4000/api/bank_account/open
 content-type: application/json
 
 {
-    "account_number": "A123456",
+    "account_number": "B123454",
     "initial_balance": 0,
     "status": "active"
 }

@@ -1,6 +1,6 @@
 defmodule BankingApi.BankAccounts do
   alias BankingApi.BankingApiApp
-  alias BankingApi.BankAccounts.Commands.OpenBankAccount
+  alias BankingApi.BankAccounts.Commands.RequestBankAccountOpening
   alias BankingApi.BankAccounts.Commands.DepositMoney
   alias BankingApi.BankAccounts.Commands.WithdrawMoney
   alias BankingApi.BankAccounts.Commands.UpdateBankAccountStatus
@@ -76,13 +76,10 @@ defmodule BankingApi.BankAccounts do
 
     command =
       params
-      |> OpenBankAccount.new()
-      |> OpenBankAccount.assign_id(id)
+      |> RequestBankAccountOpening.new()
+      |> RequestBankAccountOpening.assign_id(id)
 
-    with :ok <- check_account_number_uniqueness(command.account_number),
-         :ok <- BankingApiApp.dispatch(command, consistency: :strong) do
-      get(id)
-    end
+    BankingApiApp.dispatch(command, consistency: :strong)
   end
 
   def deposit(params) do
