@@ -14,27 +14,46 @@ defmodule BankingApi.BankAccounts.ProcessManager.BankAccountOpening do
   alias BankingApi.BankAccounts.Commands.MarkBankAccountOpeningAsFailed
   alias BankingApi.BankAccounts.Commands.MarkBankAccountOpeningAsCompleted
   alias BankingApi.BankAccounts.Events.AccountNumberReserved
+  alias BankingApi.BankAccounts.Events.AccountNumberReservationFailed
   alias BankingApi.BankAccounts.Events.BankAccountOpeningRequested
   alias BankingApi.BankAccounts.Events.BankAccountOpened
+  alias BankingApi.BankAccounts.Events.BankAccountOpeningError
   alias BankingApi.BankAccounts.Events.BankAccountOpeningCompleted
   alias BankingApi.BankAccounts.ProcessManager.BankAccountOpening
 
-  def interested?(%BankAccountOpeningRequested{id: id}), do: {:start, id}
-  def interested?(%AccountNumberReserved{bank_account_id: id}), do: {:continue, id}
-  def interested?(%BankAccountOpened{id: id}), do: {:continue, id}
-  def interested?(%BankAccountOpeningCompleted{bank_account_id: id}), do: {:stop, id}
+  def interested?(%BankAccountOpeningRequested{request_id: request_id}), do: {:start, request_id}
+
+  def interested?(%AccountNumberReserved{request_id: request_id}), do: {:continue, request_id}
+
+  def interested?(%AccountNumberReservationFailed{request_id: request_id}),
+    do: {:continue, request_id}
+
+  def interested?(%BankAccountOpened{request_id: request_id}) when not is_nil(request_id),
+    do: {:continue, request_id}
+
+  def interested?(%BankAccountOpened{}), do: false
+
+  def interested?(%BankAccountOpeningError{request_id: request_id}) when not is_nil(request_id),
+    do: {:continue, request_id}
+
+  def interested?(%BankAccountOpeningError{}), do: false
+
+  def interested?(%BankAccountOpeningCompleted{request_id: request_id}),
+    do: {:stop, request_id}
 
   def handle(
         %BankAccountOpening{},
         %BankAccountOpeningRequested{
           id: id,
-          account_number: account_number
+          account_number: account_number,
+          request_id: request_id
         }
       ) do
     [
       %ReserveAccountNumber{
         bank_account_id: id,
-        account_number: account_number
+        account_number: account_number,
+        request_id: request_id
       }
     ]
   end
@@ -43,7 +62,8 @@ defmodule BankingApi.BankAccounts.ProcessManager.BankAccountOpening do
         %BankAccountOpening{
           initial_balance: initial_balance,
           status: status,
-          account_number: account_number
+          account_number: account_number,
+          request_id: request_id
         },
         %AccountNumberReserved{bank_account_id: bank_account_id}
       ) do
@@ -51,7 +71,8 @@ defmodule BankingApi.BankAccounts.ProcessManager.BankAccountOpening do
       id: bank_account_id,
       account_number: account_number,
       initial_balance: initial_balance,
-      status: status
+      status: status,
+      request_id: request_id
     }
   end
 
@@ -65,11 +86,37 @@ defmodule BankingApi.BankAccounts.ProcessManager.BankAccountOpening do
     }
   end
 
-  def handle(%BankAccountOpening{request_id: nil}, %BankAccountOpened{}) do
+  def handle(%BankAccountOpening{}, %BankAccountOpened{}) do
     []
   end
 
-  def handle(%BankAccountOpening{}, %BankAccountOpeningCompleted{}) do
+  def handle(
+        %BankAccountOpening{request_id: request_id},
+        %AccountNumberReservationFailed{error_reason: error_reason}
+      )
+      when not is_nil(request_id) do
+    %MarkBankAccountOpeningAsFailed{
+      request_id: request_id,
+      error_reason: error_reason
+    }
+  end
+
+  def handle(%BankAccountOpening{}, %AccountNumberReservationFailed{}) do
+    []
+  end
+
+  def handle(
+        %BankAccountOpening{request_id: request_id},
+        %BankAccountOpeningError{error_reason: error_reason}
+      )
+      when not is_nil(request_id) do
+    %MarkBankAccountOpeningAsFailed{
+      request_id: request_id,
+      error_reason: error_reason
+    }
+  end
+
+  def handle(%BankAccountOpening{}, %BankAccountOpeningError{}) do
     []
   end
 
@@ -105,39 +152,24 @@ defmodule BankingApi.BankAccounts.ProcessManager.BankAccountOpening do
     state
   end
 
-  def error({:error, _failure}, _failed_message, %{context: %{failures: failures}})
-      when failures >= 2 do
-    {:stop, :too_many_failures}
+  def apply(%BankAccountOpening{} = state, %AccountNumberReservationFailed{}) do
+    state
   end
 
-  def error(
-        {:error, :account_number_already_reserved},
-        _command_or_event,
-        %{state: %{id: id, request_id: _request_id}}
-      ) do
-    Logger.alert(fn ->
-      "#{__MODULE__} account number already reserved. Marking request as failed."
-    end)
-
-    %MarkBankAccountOpeningAsFailed{
-      id: id,
-      error_reason: inspect(:account_number_already_reserved)
-    }
+  def apply(%BankAccountOpening{} = state, %BankAccountOpeningError{}) do
+    state
   end
 
-  def error({:error, reason}, _command_or_event, %{state: %{id: id, request_id: request_id}})
-      when not is_nil(request_id) do
-    Logger.error(fn -> "#{__MODULE__} encountered an error: " <> inspect(reason) end)
+  def error(error, _failed_message, _context) do
+    Logger.alert(
+      fn ->
+        """
+        Unexpected error was identified by BankAccountOpening process manager. Please, implement this error handler to dispatch MarkBankAccountOpeningAsFailed.
+        """
+      end,
+      error: error
+    )
 
-    %MarkBankAccountOpeningAsFailed{
-      id: id,
-      error_reason: inspect(reason)
-    }
-  end
-
-  def error(error, _command_or_event, _failure_context) do
-    Logger.error(fn -> "#{__MODULE__} encountered an error: " <> inspect(error) end)
-
-    :skip
+    {:stop, error}
   end
 end

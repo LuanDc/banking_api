@@ -51,11 +51,12 @@ defmodule BankingApi.BankAccounts.Aggregates.BankAccountOpeningRequest do
 
   @impl Aggregate
   def execute(
-        %BankAccountOpeningRequest{},
-        %MarkBankAccountOpeningAsFailed{id: id, error_reason: error_reason}
-      ) do
+        %BankAccountOpeningRequest{request_id: request_id},
+        %MarkBankAccountOpeningAsFailed{error_reason: error_reason}
+      )
+      when not is_nil(request_id) do
     %BankAccountOpeningFailed{
-      id: id,
+      request_id: request_id,
       error_reason: error_reason,
       date: DateTime.utc_now()
     }

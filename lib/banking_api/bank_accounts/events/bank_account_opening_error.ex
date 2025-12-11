@@ -1,4 +1,4 @@
-defmodule BankingApi.BankAccounts.Events.BankAccountOpeningFailed do
+defmodule BankingApi.BankAccounts.Events.BankAccountOpeningError do
   @derive Jason.Encoder
   defstruct [
     :request_id,

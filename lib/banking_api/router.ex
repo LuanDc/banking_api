@@ -31,7 +31,11 @@ defmodule BankingApi.Router do
   )
 
   dispatch(
-    [RequestBankAccountOpening, MarkBankAccountOpeningAsFailed, MarkBankAccountOpeningAsCompleted],
+    [
+      RequestBankAccountOpening,
+      MarkBankAccountOpeningAsFailed,
+      MarkBankAccountOpeningAsCompleted
+    ],
     to: BankAccountOpeningRequest
   )
 

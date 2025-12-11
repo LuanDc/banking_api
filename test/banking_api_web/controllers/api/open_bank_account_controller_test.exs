@@ -44,7 +44,6 @@ defmodule BankingApiWeb.Api.OpenBankAccountControllerTest do
       response = json_response(conn, 400)
       assert response["error"]["account_number"] == ["is not a valid string"]
       assert response["error"]["request_id"] == ["must be valid", "can't be empty"]
-
     end
 
     @tag :web
@@ -58,9 +57,12 @@ defmodule BankingApiWeb.Api.OpenBankAccountControllerTest do
       conn = post(conn, ~p"/api/bank_account/open", invalid_params)
 
       response = json_response(conn, 400)
-      assert response["error"]["initial_balance"] == ["must be a number greater than or equal to 0"]
-      assert response["error"]["request_id"] == ["must be valid", "can't be empty"]
 
+      assert response["error"]["initial_balance"] == [
+               "must be a number greater than or equal to 0"
+             ]
+
+      assert response["error"]["request_id"] == ["must be valid", "can't be empty"]
     end
 
     @tag :web
@@ -74,9 +76,12 @@ defmodule BankingApiWeb.Api.OpenBankAccountControllerTest do
       conn = post(conn, ~p"/api/bank_account/open", invalid_params)
 
       response = json_response(conn, 400)
-      assert response["error"]["initial_balance"] == ["must be a number greater than or equal to 0"]
-      assert response["error"]["request_id"] == ["must be valid", "can't be empty"]
 
+      assert response["error"]["initial_balance"] == [
+               "must be a number greater than or equal to 0"
+             ]
+
+      assert response["error"]["request_id"] == ["must be valid", "can't be empty"]
     end
 
     @tag :web
@@ -90,9 +95,12 @@ defmodule BankingApiWeb.Api.OpenBankAccountControllerTest do
       conn = post(conn, ~p"/api/bank_account/open", invalid_params)
 
       response = json_response(conn, 400)
-      assert response["error"]["initial_balance"] == ["must be a number greater than or equal to 0"]
-      assert response["error"]["request_id"] == ["must be valid", "can't be empty"]
 
+      assert response["error"]["initial_balance"] == [
+               "must be a number greater than or equal to 0"
+             ]
+
+      assert response["error"]["request_id"] == ["must be valid", "can't be empty"]
     end
 
     @tag :web
@@ -108,7 +116,6 @@ defmodule BankingApiWeb.Api.OpenBankAccountControllerTest do
       response = json_response(conn, 400)
       assert response["error"]["status"] == ["must be one of [\"active\", \"inactive\"]"]
       assert response["error"]["request_id"] == ["must be valid", "can't be empty"]
-
     end
 
     @tag :web
@@ -124,7 +131,6 @@ defmodule BankingApiWeb.Api.OpenBankAccountControllerTest do
       response = json_response(conn, 400)
       assert response["error"]["status"] == ["must be one of [\"active\", \"inactive\"]"]
       assert response["error"]["request_id"] == ["must be valid", "can't be empty"]
-
     end
 
     @tag :web
@@ -140,7 +146,6 @@ defmodule BankingApiWeb.Api.OpenBankAccountControllerTest do
       response = json_response(conn, 400)
       assert response["error"]["status"] == ["must be one of [\"active\", \"inactive\"]"]
       assert response["error"]["request_id"] == ["must be valid", "can't be empty"]
-
     end
 
     @tag :web

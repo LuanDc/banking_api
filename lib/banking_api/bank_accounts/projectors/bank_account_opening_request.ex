@@ -49,13 +49,13 @@ defmodule BankingApi.BankAccounts.Projectors.BankAccountOpeningRequest do
   end
 
   def project_bank_account_opening_failed(multi, %BankAccountOpeningFailed{
-        id: id,
+        request_id: request_id,
         error_reason: error_reason
       }) do
     Ecto.Multi.update_all(
       multi,
       :bank_account_opening_request_failed,
-      from(r in BankAccountOpeningRequest, where: r.id == ^id),
+      from(r in BankAccountOpeningRequest, where: r.request_id == ^request_id),
       set: [
         request_status: :failed,
         error: error_reason

@@ -11,7 +11,8 @@ defmodule BankingApi.BankAccounts.Commands.OpenBankAccountTest do
       "id" => Ecto.UUID.generate(),
       "account_number" => "ACC-1",
       "initial_balance" => 100,
-      "status" => "active"
+      "status" => "active",
+      "request_id" => Ecto.UUID.generate()
     }
 
     command = OpenBankAccount.new(attrs)
@@ -35,7 +36,8 @@ defmodule BankingApi.BankAccounts.Commands.OpenBankAccountTest do
              id: ["must be valid"],
              status: ["must be one of [\"active\", \"inactive\"]"],
              account_number: ["can't be empty"],
-             initial_balance: ["must be a number greater than or equal to 0"]
+             initial_balance: ["must be a number greater than or equal to 0"],
+             request_id: ["must be valid"]
            }
   end
 

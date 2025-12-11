@@ -13,7 +13,8 @@ defmodule BankingApi.CommandsFactory do
       id: Keyword.get(opts, :id, Ecto.UUID.generate()),
       account_number: Keyword.get(opts, :account_number, generate_account_number()),
       initial_balance: Keyword.get(opts, :initial_balance, 0),
-      status: Keyword.get(opts, :status, "active")
+      status: Keyword.get(opts, :status, "active"),
+      request_id: Keyword.get(opts, :request_id, Ecto.UUID.generate())
     }
     |> Map.merge(Map.new(opts))
   end

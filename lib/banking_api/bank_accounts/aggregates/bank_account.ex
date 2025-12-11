@@ -14,6 +14,7 @@ defmodule BankingApi.BankAccounts.Aggregates.BankAccount do
   alias BankingApi.BankAccounts.Events.BankAccountStatusUpdated
   alias BankingApi.BankAccounts.Events.MoneyDeposited
   alias BankingApi.BankAccounts.Events.MoneyWithdrawn
+  alias BankingApi.BankAccounts.Events.BankAccountOpeningError
 
   alias Commanded.Aggregates.Aggregate
 
@@ -28,7 +29,8 @@ defmodule BankingApi.BankAccounts.Aggregates.BankAccount do
           id: id,
           account_number: account_number,
           initial_balance: initial_balance,
-          status: status
+          status: status,
+          request_id: request_id
         }
       ) do
     %BankAccountOpened{
@@ -36,6 +38,7 @@ defmodule BankingApi.BankAccounts.Aggregates.BankAccount do
       account_number: account_number,
       initial_balance: initial_balance,
       status: status,
+      request_id: request_id,
       date: DateTime.utc_now()
     }
   end
@@ -156,6 +159,13 @@ defmodule BankingApi.BankAccounts.Aggregates.BankAccount do
     %BankAccountStatusUpdated{status: status} = event
     %BankAccount{account | status: status}
   end
+
+  @impl Aggregate
+  def apply(%BankAccount{} = account, %BankAccountOpeningError{}) do
+    account
+  end
+
+  def after_failure(_context), do: nil
 
   defp money_deposited(bank_account_id, amount) do
     %MoneyDeposited{

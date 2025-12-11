@@ -13,7 +13,7 @@ content-type: application/json
 
 {
     "request_id": "{{$guid}}",
-    "account_number": "ACC-03240",
+    "account_number": "ACC-22240",
     "initial_balance": 1000,
     "status": "active"
 }
@@ -24,7 +24,7 @@ content-type: application/json
 # - Permite fazer polling para verificar o status da solicitação
 # - Se houver erro, o campo "error" conterá a mensagem de erro
 # - Se sucesso, o campo "request_status" será "completed"
-GET http://localhost:4000/api/bank_account_opening_request/86990fc4-567d-4237-9c71-d5b24d9b498e
+GET http://localhost:4000/api/bank_account_opening_request/ce0ae177-45f3-4d21-a7fc-28b9556d72c4
 
 ###
 # PASSO 3 (OPCIONAL): Testar idempotência
@@ -34,7 +34,7 @@ POST http://localhost:4000/api/bank_account/open
 content-type: application/json
 
 {
-    "request_id": "1c2715ba-b451-4443-9b04-00a89be8577e",
+    "request_id": "3b6b01d3-5bd8-46a4-a649-f20b7d16f1fd",
     "account_number": "ACC-001",
     "initial_balance": 1000,
     "status": "active"
@@ -50,7 +50,7 @@ content-type: application/json
 
 {
     "request_id": "{{$guid}}",
-    "account_number": "ACC-001",
+    "account_number": "ACC-002",
     "initial_balance": 500,
     "status": "active"
 }
@@ -62,11 +62,11 @@ content-type: application/json
 
 ###
 # Buscar dados de uma conta bancária
-GET http://localhost:4000/api/bank_account/47208278-8733-4226-89c6-9eb93fc62f53
+GET http://localhost:4000/api/bank_account/4b5d237a-32d8-4121-9599-0740fe72e452
 
 ###
 # Listar transações de uma conta
-GET http://localhost:4000/api/bank_account/47208278-8733-4226-89c6-9eb93fc62f53
+GET http://localhost:4000/api/bank_account/4b5d237a-32d8-4121-9599-0740fe72e452/transactions
 
 ###
 # ========================================
@@ -79,8 +79,8 @@ POST http://localhost:4000/api/bank_account/status
 content-type: application/json
 
 {
-    "bank_account_id": "c0fa7172-4b8a-4836-9b18-1e2db3656448",
-    "status": "active"
+    "bank_account_id": "4b5d237a-32d8-4121-9599-0740fe72e452",
+    "status": "inactive"
 }
 
 ###
@@ -89,7 +89,7 @@ POST http://localhost:4000/api/bank_account/deposit
 content-type: application/json
 
 {
-    "bank_account_id": "c0fa7172-4b8a-4836-9b18-1e2db3656448",
+    "bank_account_id": "4b5d237a-32d8-4121-9599-0740fe72e452",
     "amount": 200
 }
 
@@ -99,6 +99,6 @@ POST http://localhost:4000/api/bank_account/withdraw
 content-type: application/json
 
 {
-    "bank_account_id": "c0fa7172-4b8a-4836-9b18-1e2db3656448",
+    "bank_account_id": "4b5d237a-32d8-4121-9599-0740fe72e452",
     "amount": 100
 }
