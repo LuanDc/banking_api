@@ -25,6 +25,7 @@ defmodule BankingApiWeb.Router do
 
     post "/bank_account/deposit", DepositController, :create
     post "/bank_account/withdraw", WithdrawController, :create
+    post "/bank_account/transfer", TransferController, :create
 
     get "/bank_account_opening_request/:request_id", BankAccountOpeningRequestController, :show
   end

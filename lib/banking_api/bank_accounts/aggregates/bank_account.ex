@@ -8,6 +8,8 @@ defmodule BankingApi.BankAccounts.Aggregates.BankAccount do
   alias BankingApi.BankAccounts.Commands.WithdrawMoney
   alias BankingApi.BankAccounts.Commands.OpenBankAccount
   alias BankingApi.BankAccounts.Commands.UpdateBankAccountStatus
+  alias BankingApi.BankAccounts.Commands.CompleteTransfer
+  alias BankingApi.BankAccounts.Commands.ReceiveTransfer
 
   alias BankingApi.BankAccounts.Events.BankAccountOpened
   alias BankingApi.BankAccounts.Events.BankAccountClosed
@@ -15,6 +17,8 @@ defmodule BankingApi.BankAccounts.Aggregates.BankAccount do
   alias BankingApi.BankAccounts.Events.MoneyDeposited
   alias BankingApi.BankAccounts.Events.MoneyWithdrawn
   alias BankingApi.BankAccounts.Events.BankAccountOpeningError
+  alias BankingApi.BankAccounts.Events.TransferCompleted
+  alias BankingApi.BankAccounts.Events.TransferReceived
 
   alias Commanded.Aggregates.Aggregate
 
@@ -98,23 +102,67 @@ defmodule BankingApi.BankAccounts.Aggregates.BankAccount do
     {:error, :insufficient_funds}
   end
 
+  # Complete Transfer (Debit from origin account)
+
+  @impl Aggregate
+  def execute(
+        %BankAccount{status: "active", id: bank_account_id} = bank_account,
+        %CompleteTransfer{id: transfer_id, from_account_id: from_account_id, amount: amount}
+      )
+      when not is_nil(bank_account_id) and bank_account_id == from_account_id and
+             amount <= bank_account.balance do
+    %TransferCompleted{
+      id: transfer_id,
+      from_account_id: bank_account_id,
+      to_account_id: nil,
+      amount: amount,
+      date: DateTime.utc_now()
+    }
+  end
+
+  @impl Aggregate
+  def execute(
+        %BankAccount{status: "active", id: bank_account_id},
+        %CompleteTransfer{from_account_id: from_account_id}
+      )
+      when not is_nil(bank_account_id) and bank_account_id == from_account_id do
+    {:error, :insufficient_funds}
+  end
+
+  # Receive Transfer (Credit to destination account)
+
+  @impl Aggregate
+  def execute(
+        %BankAccount{status: "active", id: bank_account_id},
+        %ReceiveTransfer{id: transfer_id, to_account_id: to_account_id, amount: amount}
+      )
+      when not is_nil(bank_account_id) and bank_account_id == to_account_id do
+    %TransferReceived{
+      id: transfer_id,
+      from_account_id: nil,
+      to_account_id: bank_account_id,
+      amount: amount,
+      date: DateTime.utc_now()
+    }
+  end
+
   # General Restrictions
 
   @impl Aggregate
   def execute(%BankAccount{status: "inactive"}, %command{})
-      when command in [DepositMoney, WithdrawMoney, CloseBankAccount] do
+      when command in [DepositMoney, WithdrawMoney, CloseBankAccount, CompleteTransfer, ReceiveTransfer] do
     {:error, :account_closed}
   end
 
   @impl Aggregate
   def execute(%BankAccount{id: nil}, %command{})
-      when command in [CloseBankAccount, DepositMoney, WithdrawMoney, UpdateBankAccountStatus] do
+      when command in [CloseBankAccount, DepositMoney, WithdrawMoney, UpdateBankAccountStatus, CompleteTransfer, ReceiveTransfer] do
     {:error, :not_found}
   end
 
   @impl Aggregate
   def execute(%BankAccount{account_number: nil}, %command{})
-      when command in [CloseBankAccount, DepositMoney, WithdrawMoney, UpdateBankAccountStatus] do
+      when command in [CloseBankAccount, DepositMoney, WithdrawMoney, UpdateBankAccountStatus, CompleteTransfer, ReceiveTransfer] do
     {:error, :not_found}
   end
 
@@ -163,6 +211,18 @@ defmodule BankingApi.BankAccounts.Aggregates.BankAccount do
   @impl Aggregate
   def apply(%BankAccount{} = account, %BankAccountOpeningError{}) do
     account
+  end
+
+  @impl Aggregate
+  def apply(%BankAccount{balance: balance} = account, %TransferCompleted{} = event) do
+    %TransferCompleted{amount: amount} = event
+    %BankAccount{account | balance: balance - amount}
+  end
+
+  @impl Aggregate
+  def apply(%BankAccount{balance: balance} = account, %TransferReceived{} = event) do
+    %TransferReceived{amount: amount} = event
+    %BankAccount{account | balance: balance + amount}
   end
 
   def after_failure(_context), do: nil

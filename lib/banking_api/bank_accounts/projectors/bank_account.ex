@@ -10,6 +10,8 @@ defmodule BankingApi.BankAccounts.Projectors.BankAccount do
   alias BankingApi.BankAccounts.Events.BankAccountStatusUpdated
   alias BankingApi.BankAccounts.Events.MoneyDeposited
   alias BankingApi.BankAccounts.Events.MoneyWithdrawn
+  alias BankingApi.BankAccounts.Events.TransferCompleted
+  alias BankingApi.BankAccounts.Events.TransferReceived
   alias BankingApi.BankAccounts.Projections.BankAccount
   alias BankingApi.BankAccounts.Projections.Transaction
 
@@ -111,6 +113,58 @@ defmodule BankingApi.BankAccounts.Projectors.BankAccount do
     )
   end
 
+  def project_transfer_completed(multi, %TransferCompleted{
+        id: transfer_id,
+        from_account_id: from_account_id,
+        amount: amount,
+        date: date
+      }) do
+    multi
+    |> update_bank_account(bank_account_query(from_account_id),
+      inc: [balance: -amount]
+    )
+    |> Ecto.Multi.run(:transaction, fn repo, _changes ->
+      bank_account = repo.get(BankAccount, from_account_id)
+
+      transaction = %Transaction{
+        id: transfer_id,
+        bank_account_id: from_account_id,
+        account_number: bank_account.account_number,
+        type: "transfer_out",
+        amount: amount,
+        date: parse_date(date)
+      }
+
+      repo.insert(transaction)
+    end)
+  end
+
+  def project_transfer_received(multi, %TransferReceived{
+        id: transfer_id,
+        to_account_id: to_account_id,
+        amount: amount,
+        date: date
+      }) do
+    multi
+    |> update_bank_account(bank_account_query(to_account_id),
+      inc: [balance: amount]
+    )
+    |> Ecto.Multi.run(:transaction, fn repo, _changes ->
+      bank_account = repo.get(BankAccount, to_account_id)
+
+      transaction = %Transaction{
+        id: transfer_id,
+        bank_account_id: to_account_id,
+        account_number: bank_account.account_number,
+        type: "transfer_in",
+        amount: amount,
+        date: parse_date(date)
+      }
+
+      repo.insert(transaction)
+    end)
+  end
+
   defp parse_date(nil), do: DateTime.utc_now()
   defp parse_date(%DateTime{} = date), do: date
 
@@ -150,5 +204,17 @@ defmodule BankingApi.BankAccounts.Projectors.BankAccount do
     %BankAccountStatusUpdated{} = event,
     _metadata,
     fn multi -> project_bank_account_status_updated(multi, event) end
+  )
+
+  project(
+    %TransferCompleted{} = event,
+    _metadata,
+    fn multi -> project_transfer_completed(multi, event) end
+  )
+
+  project(
+    %TransferReceived{} = event,
+    _metadata,
+    fn multi -> project_transfer_received(multi, event) end
   )
 end

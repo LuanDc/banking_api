@@ -4,6 +4,7 @@ defmodule BankingApi.BankAccounts do
   alias BankingApi.BankAccounts.Commands.DepositMoney
   alias BankingApi.BankAccounts.Commands.WithdrawMoney
   alias BankingApi.BankAccounts.Commands.UpdateBankAccountStatus
+  alias BankingApi.BankAccounts.Commands.InitiateTransfer
   alias BankingApi.BankAccounts.Projections.BankAccount
   alias BankingApi.BankAccounts.Projections.BankAccountOpeningRequest
   alias BankingApi.BankAccounts.Projections.Transaction
@@ -114,6 +115,19 @@ defmodule BankingApi.BankAccounts do
     with :ok <-
            BankingApiApp.dispatch(command, consistency: :strong) do
       get(command.bank_account_id)
+    end
+  end
+
+  def transfer(params) do
+    id = Ecto.UUID.generate()
+
+    command =
+      params
+      |> InitiateTransfer.new()
+      |> InitiateTransfer.assign_id(id)
+
+    with :ok <- BankingApiApp.dispatch(command, consistency: :strong) do
+      get(command.from_account_id)
     end
   end
 end

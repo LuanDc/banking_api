@@ -13,7 +13,7 @@ content-type: application/json
 
 {
     "request_id": "{{$guid}}",
-    "account_number": "ACC-22240",
+    "account_number": "ACC-{{$guid}}",
     "initial_balance": 1000,
     "status": "active"
 }
@@ -24,7 +24,7 @@ content-type: application/json
 # - Permite fazer polling para verificar o status da solicitação
 # - Se houver erro, o campo "error" conterá a mensagem de erro
 # - Se sucesso, o campo "request_status" será "completed"
-GET http://localhost:4000/api/bank_account_opening_request/ce0ae177-45f3-4d21-a7fc-28b9556d72c4
+GET http://localhost:4000/api/bank_account_opening_request/7b2e826a-3c07-4416-b5d0-7ac128c25cb4
 
 ###
 # PASSO 3 (OPCIONAL): Testar idempotência
@@ -34,7 +34,7 @@ POST http://localhost:4000/api/bank_account/open
 content-type: application/json
 
 {
-    "request_id": "3b6b01d3-5bd8-46a4-a649-f20b7d16f1fd",
+    "request_id": "7b2e826a-3c07-4416-b5d0-7ac128c25cb4",
     "account_number": "ACC-001",
     "initial_balance": 1000,
     "status": "active"
@@ -62,16 +62,101 @@ content-type: application/json
 
 ###
 # Buscar dados de uma conta bancária
-GET http://localhost:4000/api/bank_account/4b5d237a-32d8-4121-9599-0740fe72e452
+GET http://localhost:4000/api/bank_account/989b96f3-6ed4-4346-a7e0-df5bd1684f87
 
 ###
 # Listar transações de uma conta
-GET http://localhost:4000/api/bank_account/4b5d237a-32d8-4121-9599-0740fe72e452/transactions
+GET http://localhost:4000/api/bank_account/989b96f3-6ed4-4346-a7e0-df5bd1684f87/transactions
 
 ###
 # ========================================
 # OPERAÇÕES BANCÁRIAS
 # ========================================
+
+###
+# Depositar dinheiro na conta
+POST http://localhost:4000/api/bank_account/deposit
+content-type: application/json
+
+{
+    "bank_account_id": "989b96f3-6ed4-4346-a7e0-df5bd1684f87",
+    "amount": 200
+}
+
+###
+# Sacar dinheiro da conta
+POST http://localhost:4000/api/bank_account/withdraw
+content-type: application/json
+
+{
+    "bank_account_id": "989b96f3-6ed4-4346-a7e0-df5bd1684f87",
+    "amount": 100
+}
+
+###
+# Transferir dinheiro entre contas
+# - Requer request_id para idempotência ({{$guid}} gera automaticamente)
+# - from_account_id: ID da conta que enviará o dinheiro (deve ter saldo suficiente)
+# - to_account_id: ID da conta que receberá o dinheiro
+# - amount: Valor a ser transferido (deve ser maior que 0)
+# - O Process Manager orquestra automaticamente o débito e crédito
+# - Retorna a conta de origem atualizada após a transferência
+POST http://localhost:4000/api/bank_account/transfer
+content-type: application/json
+
+{
+    "request_id": "{{$guid}}",
+    "from_account_id": "989b96f3-6ed4-4346-a7e0-df5bd1684f87",
+    "to_account_id": "572ad6bb-9596-48d4-a767-12471e8032bb",
+    "amount": 500
+}
+
+###
+# PASSO 2: Verificar saldo e transações após transferência
+# - Consulte a conta de origem para ver o débito (tipo: "transfer_out")
+GET http://localhost:4000/api/bank_account/989b96f3-6ed4-4346-a7e0-df5bd1684f87/transactions
+
+###
+# PASSO 3: Verificar conta de destino
+# - Consulte a conta de destino para ver o crédito (tipo: "transfer_in")
+GET http://localhost:4000/api/bank_account/572ad6bb-9596-48d4-a767-12471e8032bb/transactions
+
+###
+# PASSO 4: Ver transações da conta de origem
+# - Deve mostrar uma transação tipo "transfer_out"
+GET http://localhost:4000/api/bank_account/4b5d237a-32d8-4121-9599-0740fe72e452/transactions
+
+###
+# PASSO 5: Ver transações da conta de destino
+# - Deve mostrar uma transação tipo "transfer_in"
+GET http://localhost:4000/api/bank_account/ce0ae177-45f3-4d21-a7fc-28b9556d72c4/transactions
+
+###
+# PASSO 6 (OPCIONAL): Testar idempotência de transferência
+# - Execute novamente com o MESMO request_id
+# - Deve retornar erro: "transfer_already_initiated"
+POST http://localhost:4000/api/bank_account/transfer
+content-type: application/json
+
+{
+    "request_id": "replace-with-previous-request-id",
+    "from_account_id": "4b5d237a-32d8-4121-9599-0740fe72e452",
+    "to_account_id": "ce0ae177-45f3-4d21-a7fc-28b9556d72c4",
+    "amount": 50
+}
+
+###
+# PASSO 7 (OPCIONAL): Testar transferência com saldo insuficiente
+# - Deve retornar erro 422: "Insufficient funds"
+POST http://localhost:4000/api/bank_account/transfer
+content-type: application/json
+
+{
+    "request_id": "{{$guid}}",
+    "from_account_id": "4b5d237a-32d8-4121-9599-0740fe72e452",
+    "to_account_id": "ce0ae177-45f3-4d21-a7fc-28b9556d72c4",
+    "amount": 999999
+}
 
 ###
 # Atualizar status da conta bancária
@@ -84,21 +169,18 @@ content-type: application/json
 }
 
 ###
-# Depositar dinheiro na conta
-POST http://localhost:4000/api/bank_account/deposit
+# PASSO 8 (OPCIONAL): Testar transferência de conta inativa
+# - Primeiro, desative a conta (veja endpoint "Atualizar status")
+# - Então tente transferir
+# - Deve retornar erro 422: "Account closed"
+POST http://localhost:4000/api/bank_account/transfer
 content-type: application/json
 
 {
-    "bank_account_id": "4b5d237a-32d8-4121-9599-0740fe72e452",
-    "amount": 200
+    "request_id": "{{$guid}}",
+    "from_account_id": "4b5d237a-32d8-4121-9599-0740fe72e452",
+    "to_account_id": "ce0ae177-45f3-4d21-a7fc-28b9556d72c4",
+    "amount": 10
 }
 
-###
-# Sacar dinheiro da conta
-POST http://localhost:4000/api/bank_account/withdraw
-content-type: application/json
 
-{
-    "bank_account_id": "4b5d237a-32d8-4121-9599-0740fe72e452",
-    "amount": 100
-}

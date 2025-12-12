@@ -4,6 +4,7 @@ defmodule BankingApi.Router do
   alias BankingApi.BankAccounts.Aggregates.AccountNumberReservation
   alias BankingApi.BankAccounts.Aggregates.BankAccount
   alias BankingApi.BankAccounts.Aggregates.BankAccountOpeningRequest
+  alias BankingApi.BankAccounts.Aggregates.Transfer
 
   alias BankingApi.BankAccounts.Commands.DepositMoney
   alias BankingApi.BankAccounts.Commands.MarkBankAccountOpeningAsFailed
@@ -13,6 +14,9 @@ defmodule BankingApi.Router do
   alias BankingApi.BankAccounts.Commands.ReserveAccountNumber
   alias BankingApi.BankAccounts.Commands.UpdateBankAccountStatus
   alias BankingApi.BankAccounts.Commands.WithdrawMoney
+  alias BankingApi.BankAccounts.Commands.InitiateTransfer
+  alias BankingApi.BankAccounts.Commands.CompleteTransfer
+  alias BankingApi.BankAccounts.Commands.ReceiveTransfer
 
   alias BankingApi.Support.Middleware.Validate
 
@@ -30,6 +34,11 @@ defmodule BankingApi.Router do
     by: :request_id
   )
 
+  identify(Transfer,
+    prefix: "transfer-",
+    by: :request_id
+  )
+
   dispatch(
     [
       RequestBankAccountOpening,
@@ -44,16 +53,22 @@ defmodule BankingApi.Router do
       OpenBankAccount,
       DepositMoney,
       WithdrawMoney,
-      UpdateBankAccountStatus
+      UpdateBankAccountStatus,
+      CompleteTransfer,
+      ReceiveTransfer
     ],
     to: BankAccount
   )
 
   dispatch(ReserveAccountNumber, to: AccountNumberReservation)
 
+  dispatch(InitiateTransfer, to: Transfer)
+
   def identity(%OpenBankAccount{id: id}), do: id
   def identity(%DepositMoney{bank_account_id: id}), do: id
   def identity(%WithdrawMoney{bank_account_id: id}), do: id
   def identity(%UpdateBankAccountStatus{bank_account_id: id}), do: id
+  def identity(%CompleteTransfer{from_account_id: id}), do: id
+  def identity(%ReceiveTransfer{to_account_id: id}), do: id
   def identity(%ReserveAccountNumber{account_number: account_number}), do: account_number
 end
